@@ -5,3 +5,4 @@ authors = ["Wangweizhen <hawking.rei@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+spin = "0.4.9"
