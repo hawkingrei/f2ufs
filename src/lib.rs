@@ -2,8 +2,10 @@
 pub mod f2fs;
 pub mod trace;
 pub mod diskptr;
+pub mod parallel_io;
 
 use std::sync::atomic::AtomicU8;
+use std::io;
 
 pub type block_t = u32;
 pub type nid_t = u32;
