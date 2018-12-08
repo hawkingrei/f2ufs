@@ -1,11 +1,16 @@
 #![feature(integer_atomics)]
-pub mod f2fs;
-pub mod trace;
-pub mod diskptr;
-pub mod parallel_io;
 
-use std::sync::atomic::AtomicU8;
+extern crate hashbrown;
+extern crate indexmap;
+
+pub mod diskptr;
+pub mod f2fs;
+pub mod parallel_io;
+pub mod trace;
+pub mod util;
+
 use std::io;
+use std::sync::atomic::AtomicU8;
 
 pub type block_t = u32;
 pub type nid_t = u32;

@@ -9,7 +9,9 @@ default = []
 failpoints = ["fail", "rand"]
 
 [dependencies]
+fail = { version = "0.2", optional = true }
+hashbrown = {version = "0.1.7", features = ["serde"]}
+indexmap = { version = "1.0.2", features = ["serde-1"] }
+rand = { version = "0.6", optional = true }
 spin = "0.4.9"
 zstd = "0.4.21+zstd.1.3.7"
-fail = { version = "0.2", optional = true }
-rand = { version = "0.6", optional = true }
