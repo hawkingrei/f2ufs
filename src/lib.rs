@@ -5,7 +5,10 @@ extern crate indexmap;
 
 pub mod diskptr;
 pub mod f2fs;
+pub mod inode;
+pub mod mem_inode;
 pub mod parallel_io;
+pub mod segment;
 pub mod trace;
 pub mod util;
 
