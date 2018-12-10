@@ -1,15 +1,22 @@
 #![feature(integer_atomics)]
 
+#[macro_use]
+extern crate log;
 extern crate hashbrown;
 extern crate indexmap;
+extern crate linked_hash_map;
 
 pub mod diskptr;
+pub mod error;
 pub mod f2fs;
+pub mod file;
 pub mod inode;
 pub mod mem_inode;
 pub mod parallel_io;
 pub mod segment;
+pub mod storage;
 pub mod trace;
+pub mod trans;
 pub mod util;
 
 use std::io;
