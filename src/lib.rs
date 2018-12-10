@@ -5,6 +5,9 @@ extern crate log;
 extern crate hashbrown;
 extern crate indexmap;
 extern crate linked_hash_map;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 pub mod diskptr;
 pub mod error;

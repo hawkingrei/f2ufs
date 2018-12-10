@@ -1,7 +1,8 @@
-use rand;
 use std::fmt::{self, Debug};
 use std::ops::Index;
 use std::path::{Path, PathBuf};
+
+use crate::util::crypto::Crypto;
 /// Unique entity ID.
 ///
 /// This represents a 32-byte randomly generated unique ID.
@@ -22,8 +23,6 @@ impl Eid {
     /// Create a new random entity ID
     pub(crate) fn new() -> Self {
         let mut eid = Eid::new_empty();
-        let mut r1 = rand::random::<u128>().to_vec();
-        let mut r2 = rand::random::<u128>();
         Crypto::random_buf(&mut eid.0);
         eid
     }
