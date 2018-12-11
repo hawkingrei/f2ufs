@@ -9,6 +9,7 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate rmp_serde;
+extern crate bytes;
 
 macro_rules! map_io_err {
     ($x:expr) => {
