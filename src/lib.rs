@@ -4,6 +4,7 @@
 #[macro_use]
 extern crate log;
 extern crate hashbrown;
+extern crate lz4;
 extern crate indexmap;
 extern crate linked_hash_map;
 extern crate serde;

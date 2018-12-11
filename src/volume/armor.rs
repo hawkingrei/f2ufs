@@ -11,6 +11,7 @@ use crate::trans::eid::Eid;
 use crate::util::crypto::Crypto;
 use crate::trans::eid::Id;
 use crate::error::{Error, Result};
+use crate::volume::volume::{Reader as VolReader, VolumeRef, Writer as VolWriter};
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
 pub enum Arm {
