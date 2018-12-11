@@ -1,12 +1,15 @@
 use std::cmp::min;
+use std::error::Error as StdError;
 use std::fmt::{self, Debug};
-use std::sync::Arc;
-use std::sync::RwLock;
+use std::io::{Error as IoError, ErrorKind, Read, Result as IoResult, Write};
+use std::ops::DerefMut;
 use std::path::Path;
+use std::sync::{Arc, RwLock};
 
 use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 
+use super::file::FileStorage;
 use crate::trans::eid::Eid;
 use crate::util::crypto::{Cipher, Cost, Crypto, Key};
 use crate::util::lru::{CountMeter, Lru, Meter, PinChecker};
@@ -58,7 +61,7 @@ impl Storage {
     const ADDRESS_CACHE_SIZE: usize = 64;
 
     pub fn new(uri: &str) -> Result<Self> {
-        let depot: Box<Storable> = if uri.starts_with("file://") {
+        let depot = if uri.starts_with("file://") {
             let path = Path::new(&uri[7..]);
             let depot = FileStorage::new(path);
             Box::new(depot)

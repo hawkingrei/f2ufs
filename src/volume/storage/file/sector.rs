@@ -24,6 +24,7 @@ use crate::volume::armor::Arm;
 use crate::error::{Error, Result};
 use crate::volume::armor::ArmAccess;
 use crate::volume::armor::Seq;
+use crate::volume::armor::Armor;
 
 // how many blocks in a sector, must be 2^n and less than u16::MAX
 pub const BLKS_PER_SECTOR: usize = 4 * 1024;

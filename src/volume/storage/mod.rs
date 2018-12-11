@@ -1,6 +1,8 @@
 pub mod file;
 pub mod storage;
 
+pub use self::file::FileStorage;
+
 use std::fmt::Debug;
 
 use crate::error::Result;

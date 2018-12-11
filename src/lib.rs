@@ -1,4 +1,5 @@
 #![feature(integer_atomics)]
+#![feature(arbitrary_self_types,unsized_locals)]
 
 #[macro_use]
 extern crate log;

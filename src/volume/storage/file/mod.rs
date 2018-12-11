@@ -1,5 +1,8 @@
+
 mod file;
 mod file_armor;
-mod vio;
 mod index;
 mod sector;
+mod vio;
+
+pub use self::file::FileStorage;
