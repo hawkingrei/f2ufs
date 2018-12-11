@@ -4,8 +4,8 @@ use std::fmt::{self, Display, Formatter};
 use std::io::Error as IoError;
 use std::result;
 
-//use rmp_serde::decode::Error as DecodeError;
-//use rmp_serde::encode::Error as EncodeError;
+use rmp_serde::decode::Error as DecodeError;
+use rmp_serde::encode::Error as EncodeError;
 
 /// The error type for operations with [`Repo`] and [`File`].
 ///
@@ -59,8 +59,8 @@ pub enum Error {
     NotFinish,
     Closed,
 
-    //Encode(EncodeError),
-    //Decode(DecodeError),
+    Encode(EncodeError),
+    Decode(DecodeError),
     Var(VarError),
     Io(IoError),
 }
@@ -114,8 +114,8 @@ impl Display for Error {
             Error::NotFinish => write!(f, "File does not finish yet"),
             Error::Closed => write!(f, "Repo is closed"),
 
-            //Error::Encode(ref err) => err.fmt(f),
-            //Error::Decode(ref err) => err.fmt(f),
+            Error::Encode(ref err) => err.fmt(f),
+            Error::Decode(ref err) => err.fmt(f),
             Error::Var(ref err) => err.fmt(f),
             Error::Io(ref err) => err.fmt(f),
         }
@@ -171,8 +171,8 @@ impl StdError for Error {
             Error::NotFinish => "File does not finish yet",
             Error::Closed => "Repo is closed",
 
-            //Error::Encode(ref err) => err.description(),
-            //Error::Decode(ref err) => err.description(),
+            Error::Encode(ref err) => err.description(),
+            Error::Decode(ref err) => err.description(),
             Error::Var(ref err) => err.description(),
             Error::Io(ref err) => err.description(),
         }
@@ -180,8 +180,8 @@ impl StdError for Error {
 
     fn cause(&self) -> Option<&StdError> {
         match *self {
-            //Error::Encode(ref err) => Some(err),
-            //Error::Decode(ref err) => Some(err),
+            Error::Encode(ref err) => Some(err),
+            Error::Decode(ref err) => Some(err),
             Error::Var(ref err) => Some(err),
             Error::Io(ref err) => Some(err),
 
@@ -190,7 +190,6 @@ impl StdError for Error {
     }
 }
 
-/*
 impl From<EncodeError> for Error {
     fn from(err: EncodeError) -> Error {
         Error::Encode(err)
@@ -214,7 +213,6 @@ impl From<IoError> for Error {
         Error::Io(err)
     }
 }
-*/
 
 impl Into<i32> for Error {
     fn into(self) -> i32 {
@@ -265,8 +263,8 @@ impl Into<i32> for Error {
             Error::NotFinish => -1074,
             Error::Closed => -1075,
 
-            //Error::Encode(_) => -2000,
-            //Error::Decode(_) => -2010,
+            Error::Encode(_) => -2000,
+            Error::Decode(_) => -2010,
             Error::Var(_) => -2020,
             Error::Io(_) => -2030,
         }
@@ -322,8 +320,8 @@ impl PartialEq for Error {
             (&Error::NotFinish, &Error::NotFinish) => true,
             (&Error::Closed, &Error::Closed) => true,
 
-            //(&Error::Encode(_), &Error::Encode(_)) => true,
-            //(&Error::Decode(_), &Error::Decode(_)) => true,
+            (&Error::Encode(_), &Error::Encode(_)) => true,
+            (&Error::Decode(_), &Error::Decode(_)) => true,
             (&Error::Var(_), &Error::Var(_)) => true,
             (&Error::Io(ref a), &Error::Io(ref b)) => a.kind() == b.kind(),
 

@@ -1,10 +1,13 @@
 pub mod file;
 pub mod storage;
 
+use std::fmt::Debug;
+
 use crate::error::Result;
 use crate::trans::Eid;
 use crate::volume::address::Span;
-use std::fmt::Debug;
+use crate::util::crypto::Crypto;
+use crate::util::crypto::Key;
 
 /// Storable trait
 pub trait Storable: Debug + Send + Sync {
