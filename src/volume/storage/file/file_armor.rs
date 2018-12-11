@@ -11,6 +11,9 @@ use crate::trans::eid::Eid;
 use crate::util::crypto::{Crypto, Key};
 use crate::util::{ensure_parents_dir, remove_empty_parent_dir};
 use crate::trans::Finish;
+use crate::volume::armor::ArmAccess;
+use crate::volume::armor::Seq;
+use crate::volume::armor::Armor;
 
 // read/write frame size
 const FRAME_SIZE: usize = 16 * 1024;

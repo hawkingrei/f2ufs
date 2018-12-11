@@ -9,6 +9,8 @@ use crate::util::lru::CountMeter;
 use crate::util::lru::Lru;
 use crate::util::crypto::HashKey;
 use crate::volume::storage::file::file_armor::FileArmor;
+use crate::volume::armor::ArmAccess;
+use crate::volume::armor::Seq;
 
 // entity index
 #[derive(Clone, Deserialize, Serialize)]

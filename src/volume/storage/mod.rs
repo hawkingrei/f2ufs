@@ -15,10 +15,10 @@ pub trait Storable: Debug + Send + Sync {
     fn connect(&mut self) -> Result<()>;
 
     // initial a storage
-    fn init(&mut self) -> Result<()>;
+    fn init(&mut self, crypto: Crypto, key: Key) -> Result<()>;
 
     // open a storage
-    fn open(&mut self) -> Result<()>;
+    fn open(&mut self, crypto: Crypto, key: Key) -> Result<()>;
 
     // close a storage
     fn close(&mut self) -> Result<()>;

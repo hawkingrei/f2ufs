@@ -22,6 +22,9 @@ use crate::util::lru::PinChecker;
 use crate::volume::storage::file::file_armor::FileArmor;
 use crate::volume::armor::Arm;
 use crate::error::{Error, Result};
+use crate::volume::armor::ArmAccess;
+use crate::volume::armor::Seq;
+
 // how many blocks in a sector, must be 2^n and less than u16::MAX
 pub const BLKS_PER_SECTOR: usize = 4 * 1024;
 
