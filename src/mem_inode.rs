@@ -1,5 +1,1 @@
-
-
-pub struct sst {
-    
-}
+pub struct sst {}

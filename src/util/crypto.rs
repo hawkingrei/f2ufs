@@ -24,11 +24,7 @@ extern "C" {
     fn randombytes_buf(buf: *mut u8, size: usize);
     fn randombytes_random() -> u32;
     fn randombytes_uniform(upper_bound: u32) -> u32;
-    fn randombytes_buf_deterministic(
-        buf: *mut u8,
-        size: usize,
-        seed: *const u8,
-    );
+    fn randombytes_buf_deterministic(buf: *mut u8, size: usize, seed: *const u8);
 
     // generic hash
     // -------------
@@ -40,22 +36,10 @@ extern "C" {
         key: *const u8,
         keylen: usize,
     ) -> i32;
-    fn crypto_generichash_init(
-        state: *mut u8,
-        key: *const u8,
-        keylen: usize,
-        outlen: usize,
-    ) -> i32;
-    fn crypto_generichash_update(
-        state: *mut u8,
-        inbuf: *const u8,
-        inlen: u64,
-    ) -> i32;
-    fn crypto_generichash_final(
-        state: *mut u8,
-        out: *mut u8,
-        outlen: usize,
-    ) -> i32;
+    fn crypto_generichash_init(state: *mut u8, key: *const u8, keylen: usize, outlen: usize)
+        -> i32;
+    fn crypto_generichash_update(state: *mut u8, inbuf: *const u8, inlen: u64) -> i32;
+    fn crypto_generichash_final(state: *mut u8, out: *mut u8, outlen: usize) -> i32;
 
     // password hash
     // -------------
@@ -112,12 +96,7 @@ extern "C" {
     fn crypto_aead_aes256gcm_is_available() -> i32;
 
     // nonce extension
-    fn crypto_core_hchacha20(
-        out: *mut u8,
-        inbuf: *const u8,
-        k: *const u8,
-        c: *const u8,
-    ) -> i32;
+    fn crypto_core_hchacha20(out: *mut u8, inbuf: *const u8, k: *const u8, c: *const u8) -> i32;
 
     fn crypto_aead_aes256gcm_encrypt(
         c: *mut u8,
@@ -715,8 +694,8 @@ pub struct Crypto {
 impl Crypto {
     // nonce extension const
     const NONCE_EXT_CONST: [u8; 16] = [
-        0x32, 0xb9, 0xa5, 0xb8, 0xb1, 0x96, 0x83, 0x85, 0xa3, 0x4e, 0x47, 0x97,
-        0x0d, 0x82, 0xc1, 0x6d,
+        0x32, 0xb9, 0xa5, 0xb8, 0xb1, 0x96, 0x83, 0x85, 0xa3, 0x4e, 0x47, 0x97, 0x0d, 0x82, 0xc1,
+        0x6d,
     ];
 
     /// Initialise libsodium
@@ -767,11 +746,7 @@ impl Crypto {
     #[allow(dead_code)]
     pub fn random_buf_deterministic(buf: &mut [u8], seed: &RandomSeed) {
         unsafe {
-            randombytes_buf_deterministic(
-                buf.as_mut_ptr(),
-                buf.len(),
-                seed.as_ptr(),
-            );
+            randombytes_buf_deterministic(buf.as_mut_ptr(), buf.len(), seed.as_ptr());
         }
     }
 
@@ -791,22 +766,10 @@ impl Crypto {
     // Generic Hash
     // -------------
     /// Generic purpose hashing on raw pointer
-    pub fn hash_raw(
-        inbuf: *const u8,
-        len: usize,
-        key: *const u8,
-        keylen: usize,
-    ) -> Hash {
+    pub fn hash_raw(inbuf: *const u8, len: usize, key: *const u8, keylen: usize) -> Hash {
         let mut ret = Hash::new_empty();
         unsafe {
-            match crypto_generichash(
-                ret.as_mut_ptr(),
-                HASH_SIZE,
-                inbuf,
-                len as u64,
-                key,
-                keylen,
-            ) {
+            match crypto_generichash(ret.as_mut_ptr(), HASH_SIZE, inbuf, len as u64, key, keylen) {
                 0 => ret,
                 _ => unreachable!(),
             }
@@ -816,12 +779,7 @@ impl Crypto {
     /// Generic purpose hashing with key
     #[inline]
     pub fn hash_with_key(inbuf: &[u8], key: &HashKey) -> Hash {
-        Crypto::hash_raw(
-            inbuf.as_ptr(),
-            inbuf.len(),
-            key.as_ptr(),
-            HASHKEY_SIZE,
-        )
+        Crypto::hash_raw(inbuf.as_ptr(), inbuf.len(), key.as_ptr(), HASHKEY_SIZE)
     }
 
     /// Generic purpose hashing without key
@@ -833,12 +791,7 @@ impl Crypto {
     /// Initialise hash state for multi-part hashing (zero copy).
     pub fn hash_init_to(state: &mut HashState) {
         unsafe {
-            match crypto_generichash_init(
-                state.as_mut_ptr(),
-                ptr::null(),
-                0,
-                HASH_SIZE,
-            ) {
+            match crypto_generichash_init(state.as_mut_ptr(), ptr::null(), 0, HASH_SIZE) {
                 0 => {}
                 _ => unreachable!(),
             }
@@ -855,11 +808,8 @@ impl Crypto {
     /// Processing a chunk of the message, update hash state.
     pub fn hash_update(state: &mut HashState, inbuf: &[u8]) {
         unsafe {
-            match crypto_generichash_update(
-                state.as_mut_ptr(),
-                inbuf.as_ptr(),
-                inbuf.len() as u64,
-            ) {
+            match crypto_generichash_update(state.as_mut_ptr(), inbuf.as_ptr(), inbuf.len() as u64)
+            {
                 0 => (),
                 _ => unreachable!(),
             };
@@ -869,11 +819,7 @@ impl Crypto {
     /// Finanlise multi-part hashing.
     pub fn hash_final_to(state: &mut HashState, hash: &mut Hash) {
         unsafe {
-            match crypto_generichash_final(
-                state.as_mut_ptr(),
-                hash.as_mut_ptr(),
-                HASH_SIZE,
-            ) {
+            match crypto_generichash_final(state.as_mut_ptr(), hash.as_mut_ptr(), HASH_SIZE) {
                 0 => (),
                 _ => unreachable!(),
             }
@@ -989,13 +935,7 @@ impl Crypto {
     }
 
     /// Encrypt message with specified key
-    pub fn encrypt_raw(
-        &self,
-        ctxt: &mut [u8],
-        msg: &[u8],
-        key: &Key,
-        ad: &[u8],
-    ) -> Result<usize> {
+    pub fn encrypt_raw(&self, ctxt: &mut [u8], msg: &[u8], key: &Key, ad: &[u8]) -> Result<usize> {
         let nonce_size = self.nonce_size();
         let p_ctxt = ctxt.as_mut_ptr();
         let mut clen: u64 = 0;
@@ -1049,12 +989,7 @@ impl Crypto {
         }
     }
 
-    pub fn encrypt_with_ad(
-        &self,
-        msg: &[u8],
-        key: &Key,
-        ad: &[u8],
-    ) -> Result<Vec<u8>> {
+    pub fn encrypt_with_ad(&self, msg: &[u8], key: &Key, ad: &[u8]) -> Result<Vec<u8>> {
         let mut ctxt = vec![0u8; self.encrypted_len(msg.len())];
         let enc_len = self.encrypt_raw(&mut ctxt, msg, key, ad)?;
         unsafe {
@@ -1069,23 +1004,12 @@ impl Crypto {
     }
 
     /// Encrypt message directly to dest buffer, zero copy
-    pub fn encrypt_to(
-        &self,
-        dst: &mut [u8],
-        msg: &[u8],
-        key: &Key,
-    ) -> Result<usize> {
+    pub fn encrypt_to(&self, dst: &mut [u8], msg: &[u8], key: &Key) -> Result<usize> {
         self.encrypt_raw(dst, msg, key, &[0u8; 0])
     }
 
     /// Decrypt message with specified key
-    pub fn decrypt_raw(
-        &self,
-        msg: &mut [u8],
-        ctxt: &[u8],
-        key: &Key,
-        ad: &[u8],
-    ) -> Result<usize> {
+    pub fn decrypt_raw(&self, msg: &mut [u8], ctxt: &[u8], key: &Key, ad: &[u8]) -> Result<usize> {
         let mut msglen = msg.len() as u64;
         let nonce_size = self.nonce_size();
         let nonce = &ctxt[0..nonce_size];
@@ -1127,12 +1051,7 @@ impl Crypto {
         }
     }
 
-    pub fn decrypt_with_ad(
-        &self,
-        ctxt: &[u8],
-        key: &Key,
-        ad: &[u8],
-    ) -> Result<Vec<u8>> {
+    pub fn decrypt_with_ad(&self, ctxt: &[u8], key: &Key, ad: &[u8]) -> Result<Vec<u8>> {
         let mut msg = vec![0u8; self.decrypted_len(ctxt.len())];
         let dec_len = self.decrypt_raw(&mut msg, ctxt, key, ad)?;
         unsafe {
@@ -1148,12 +1067,7 @@ impl Crypto {
 
     /// Decrypt cipher text directly to dest buffer, zero copy
     #[inline]
-    pub fn decrypt_to(
-        &self,
-        dst: &mut [u8],
-        ctxt: &[u8],
-        key: &Key,
-    ) -> Result<usize> {
+    pub fn decrypt_to(&self, dst: &mut [u8], ctxt: &[u8], key: &Key) -> Result<usize> {
         self.decrypt_raw(dst, ctxt, key, &[0u8; 0])
     }
 }

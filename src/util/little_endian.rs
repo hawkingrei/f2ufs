@@ -56,8 +56,7 @@ impl Encode for u8 {
 
 impl Decode for u16 {
     fn read_le(from: &[u8]) -> u16 {
-        from[0] as u16
-            | (from[1] as u16) << 8
+        from[0] as u16 | (from[1] as u16) << 8
     }
 }
 impl Encode for u16 {
@@ -67,13 +66,9 @@ impl Encode for u16 {
     }
 }
 
-
 impl Decode for u32 {
     fn read_le(from: &[u8]) -> u32 {
-        from[0] as u32
-            | (from[1] as u32) << 8
-            | (from[2] as u32) << 16
-            | (from[3] as u32) << 24
+        from[0] as u32 | (from[1] as u32) << 8 | (from[2] as u32) << 16 | (from[3] as u32) << 24
     }
 }
 impl Encode for u32 {
@@ -154,11 +149,18 @@ impl Encode for u128 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{ops, mem, fmt};
+    use std::{fmt, mem, ops};
 
     fn test_int<T>(n: T)
-    where T: Encode + Decode + Copy + PartialEq + From<u8> + fmt::Debug
-        + ops::BitAnd<T, Output = T> + ops::Shr<T, Output = T>,
+    where
+        T: Encode
+            + Decode
+            + Copy
+            + PartialEq
+            + From<u8>
+            + fmt::Debug
+            + ops::BitAnd<T, Output = T>
+            + ops::Shr<T, Output = T>,
     {
         let len = mem::size_of::<T>();
         let mut buf = [0; 32];

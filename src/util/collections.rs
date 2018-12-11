@@ -3,4 +3,4 @@ pub type HashSet<T> = ::hashbrown::HashSet<T, ::hashbrown::hash_map::DefaultHash
 pub use hashbrown::hash_map::Entry as HashMapEntry;
 
 pub use indexmap::map::Entry as OrderMapEntry;
-pub use indexmap::IndexMap as OrderMap; 
+pub use indexmap::IndexMap as OrderMap;
