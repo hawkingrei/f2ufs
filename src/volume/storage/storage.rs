@@ -18,6 +18,10 @@ use crate::volume::storage::Storable;
 use crate::BLKS_PER_FRAME;
 use crate::error::{Error, Result};
 use crate::util::IntoRef;
+use crate::BLK_SIZE;
+use crate::util::align_ceil_chunk;
+use crate::FRAME_SIZE;
+use crate::trans::Finish;
 
 // frame cache meter, measured by frame byte size
 #[derive(Debug, Default)]

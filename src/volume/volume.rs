@@ -17,7 +17,7 @@ use crate::volume::storage::storage::StorageRef;
 use crate::trans::eid::Eid;
 use crate::trans::Finish;
 use crate::util::IntoRef;
-use crate::error::Result;
+use crate::error::{Result,Error};
 /// Volume info
 #[derive(Debug, Clone, Default)]
 pub struct Info {
