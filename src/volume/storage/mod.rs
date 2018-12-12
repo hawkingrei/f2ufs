@@ -1,7 +1,10 @@
-pub mod file;
+mod file;
 pub mod storage;
+mod mem;
 
 pub use self::file::FileStorage;
+pub use self::mem::MemStorage;
+pub use self::storage::{Reader, Storage, StorageRef, Writer};
 
 use std::fmt::Debug;
 
