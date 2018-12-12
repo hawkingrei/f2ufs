@@ -6,11 +6,11 @@ use bytes::BufMut;
 use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 
-use crate::trans::Finish;
-use crate::trans::eid::Eid;
-use crate::util::crypto::Crypto;
-use crate::trans::eid::Id;
 use crate::error::{Error, Result};
+use crate::trans::eid::Eid;
+use crate::trans::eid::Id;
+use crate::trans::Finish;
+use crate::util::crypto::Crypto;
 use crate::volume::volume::{Reader as VolReader, VolumeRef, Writer as VolWriter};
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]
@@ -110,10 +110,7 @@ pub trait Armor<'de> {
     }
 
     // try to load both left and right arms
-    fn load_arms(
-        &self,
-        id: &Eid,
-    ) -> Result<(Option<Self::Item>, Option<Self::Item>)> {
+    fn load_arms(&self, id: &Eid) -> Result<(Option<Self::Item>, Option<Self::Item>)> {
         // load left and right arms
         let left_arm = self.load_one_arm(id, Arm::Left);
         let right_arm = self.load_one_arm(id, Arm::Right);
@@ -124,9 +121,7 @@ pub trait Armor<'de> {
                     assert!(left.seq() != right.seq());
                     Ok((Some(left), Some(right)))
                 }
-                Err(ref err) if *err == Error::NotFound => {
-                    Ok((Some(left), None))
-                }
+                Err(ref err) if *err == Error::NotFound => Ok((Some(left), None)),
                 Err(err) => return Err(err),
             },
             Err(ref err) if *err == Error::NotFound => match right_arm {
@@ -159,11 +154,7 @@ pub trait Armor<'de> {
     }
 
     // save item
-    fn save_and_finish(
-        &self,
-        item: &mut Self::Item,
-        need_flush: bool,
-    ) -> Result<()> {
+    fn save_and_finish(&self, item: &mut Self::Item, need_flush: bool) -> Result<()> {
         // increase sequence and toggle arm
         item.inc_seq();
         item.arm_mut().toggle();
@@ -182,7 +173,8 @@ pub trait Armor<'de> {
                 wtr.finish()?;
             }
             Ok(())
-        })().or_else(|err| {
+        })()
+        .or_else(|err| {
             // if save item failed, revert its arm back
             item.arm_mut().toggle();
             Err(err)

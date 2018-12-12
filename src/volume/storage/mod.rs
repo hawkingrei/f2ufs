@@ -7,9 +7,9 @@ use std::fmt::Debug;
 
 use crate::error::Result;
 use crate::trans::Eid;
-use crate::volume::address::Span;
 use crate::util::crypto::Crypto;
 use crate::util::crypto::Key;
+use crate::volume::address::Span;
 
 /// Storable trait
 pub trait Storable: Debug + Send + Sync {

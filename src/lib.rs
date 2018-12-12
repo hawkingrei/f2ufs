@@ -1,17 +1,17 @@
 #![feature(integer_atomics)]
-#![feature(arbitrary_self_types,unsized_locals)]
+#![feature(arbitrary_self_types, unsized_locals)]
 
 #[macro_use]
 extern crate log;
 extern crate hashbrown;
-extern crate lz4;
 extern crate indexmap;
 extern crate linked_hash_map;
+extern crate lz4;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate rmp_serde;
 extern crate bytes;
+extern crate rmp_serde;
 
 macro_rules! map_io_err {
     ($x:expr) => {

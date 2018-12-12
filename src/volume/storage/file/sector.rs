@@ -7,24 +7,24 @@ use bytes::BufMut;
 use linked_hash_map::LinkedHashMap;
 
 use super::vio;
+use crate::error::{Error, Result};
+use crate::trans::eid::Eid;
+use crate::trans::eid::Id;
+use crate::util::crypto::Crypto;
+use crate::util::crypto::HashKey;
+use crate::util::crypto::Key;
+use crate::util::ensure_parents_dir;
 use crate::util::lru::CountMeter;
 use crate::util::lru::Lru;
-use crate::trans::eid::Id;
-use crate::BLK_SIZE;
-use crate::util::ensure_parents_dir;
-use crate::volume::address::Span;
-use crate::util::crypto::Key;
-use crate::util::crypto::Crypto;
-use crate::trans::eid::Eid;
-use crate::util::remove_empty_parent_dir;
-use crate::util::crypto::HashKey;
 use crate::util::lru::PinChecker;
-use crate::volume::storage::file::file_armor::FileArmor;
+use crate::util::remove_empty_parent_dir;
+use crate::volume::address::Span;
 use crate::volume::armor::Arm;
-use crate::error::{Error, Result};
 use crate::volume::armor::ArmAccess;
-use crate::volume::armor::Seq;
 use crate::volume::armor::Armor;
+use crate::volume::armor::Seq;
+use crate::volume::storage::file::file_armor::FileArmor;
+use crate::BLK_SIZE;
 
 // how many blocks in a sector, must be 2^n and less than u16::MAX
 pub const BLKS_PER_SECTOR: usize = 4 * 1024;
@@ -185,12 +185,7 @@ impl SectorMgr {
     }
 
     #[inline]
-    pub fn set_crypto_ctx(
-        &mut self,
-        crypto: Crypto,
-        key: Key,
-        hash_key: HashKey,
-    ) {
+    pub fn set_crypto_ctx(&mut self, crypto: Crypto, key: Key, hash_key: HashKey) {
         self.sec_armor.set_crypto_ctx(crypto, key);
         self.hash_key = hash_key;
     }
@@ -212,11 +207,7 @@ impl SectorMgr {
     }
 
     // open a sector where the block index sits in
-    fn open_sector(
-        &mut self,
-        sec_idx: usize,
-        create: bool,
-    ) -> Result<&mut Sector> {
+    fn open_sector(&mut self, sec_idx: usize, create: bool) -> Result<&mut Sector> {
         if !self.sec_cache.contains_key(&sec_idx) {
             let sec_id = self.sector_idx_to_id(sec_idx);
 
@@ -252,11 +243,7 @@ impl SectorMgr {
     }
 
     // open sector data file
-    fn open_sector_data(
-        &mut self,
-        sec_idx: usize,
-        create: bool,
-    ) -> Result<vio::File> {
+    fn open_sector_data(&mut self, sec_idx: usize, create: bool) -> Result<vio::File> {
         if !self.sec_data_cache.contains_key(&sec_idx) {
             // open sector data file and save it to cache
             let path = self.sector_data_path(sec_idx);
@@ -359,12 +346,12 @@ impl SectorMgr {
                 let is_shrinkable = {
                     let sec = self.open_sector(sec_idx, false)?;
                     sec.curr_size = SECTOR_SIZE;
-                    sec.actual_size = BLK_SIZE * sec
-                        .blk_map
-                        .iter()
-                        .filter(|b| **b != BLK_DELETE_MARK)
-                        .count()
-                        as usize;
+                    sec.actual_size = BLK_SIZE
+                        * sec
+                            .blk_map
+                            .iter()
+                            .filter(|b| **b != BLK_DELETE_MARK)
+                            .count() as usize;
                     sec.is_shrinkable()
                 };
 

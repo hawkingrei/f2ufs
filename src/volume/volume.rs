@@ -2,22 +2,22 @@ use std::fmt::{self, Debug};
 use std::io::{Read, Result as IoResult, Write};
 use std::sync::{Arc, RwLock};
 
-use lz4::{
-    Decoder as Lz4Decoder, Encoder as Lz4Encoder,
-    EncoderBuilder as Lz4EncoderBuilder,
-};
+use lz4::{Decoder as Lz4Decoder, Encoder as Lz4Encoder, EncoderBuilder as Lz4EncoderBuilder};
 
-use crate::volume::storage::storag::{
-    Reader as StorageReader, Storage, StorageRef, Writer as StorageWriter,
-};
+use super::super_block::SuperBlk;
+use crate::error::{Error, Result};
+use crate::trans::eid::Eid;
+use crate::trans::Finish;
 use crate::util::crypto::{Cipher, Cost, Salt};
 use crate::util::time::Time;
 use crate::util::version::Version;
-use crate::volume::storage::storage::StorageRef;
-use crate::trans::eid::Eid;
-use crate::trans::Finish;
 use crate::util::IntoRef;
-use crate::error::{Result,Error};
+use crate::volume::allocator::AllocatorRef;
+use crate::volume::storage::storage::{
+    Reader as StorageReader, Storage, StorageRef, Writer as StorageWriter,
+};
+use crate::fs::Config;
+
 /// Volume info
 #[derive(Debug, Clone, Default)]
 pub struct Info {
@@ -48,12 +48,7 @@ impl Volume {
     }
 
     /// Initialise volume
-    pub fn init(
-        &mut self,
-        pwd: &str,
-        cfg: &Config,
-        payload: &[u8],
-    ) -> Result<()> {
+    pub fn init(&mut self, pwd: &str, cfg: &Config, payload: &[u8]) -> Result<()> {
         let mut storage = self.storage.write().unwrap();
         storage.connect()?;
 
@@ -138,12 +133,7 @@ impl Volume {
     }
 
     /// Reset volume password
-    pub fn reset_password(
-        &mut self,
-        old_pwd: &str,
-        new_pwd: &str,
-        cost: Cost,
-    ) -> Result<()> {
+    pub fn reset_password(&mut self, old_pwd: &str, new_pwd: &str, cost: Cost) -> Result<()> {
         let mut storage = self.storage.write().unwrap();
 
         // load old super block
@@ -209,7 +199,7 @@ impl Reader {
     pub fn new(id: &Eid, vol: &VolumeRef) -> Result<Self> {
         let vol = vol.read().unwrap();
         let rdr = StorageReader::new(id, &vol.storage)?;
-        
+
         Ok(Reader {
             inner: Box::new(Lz4Decoder::new(rdr).unwrap()),
         })
@@ -222,7 +212,6 @@ impl Read for Reader {
         self.inner.read(buf)
     }
 }
-
 
 impl Debug for Reader {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -405,8 +394,6 @@ mod tests {
         let (vol, _tmpdir) = setup_file_vol(&pwd, &payload);
         reopen_test(&pwd, &payload, vol);
     }
-
-
 
     fn perf_test(vol: VolumeRef, prefix: &str) {
         const DATA_LEN: usize = 36 * 1024 * 1024;

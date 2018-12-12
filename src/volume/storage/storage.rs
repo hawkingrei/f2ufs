@@ -10,18 +10,20 @@ use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 
 use super::file::FileStorage;
+use crate::error::{Error, Result};
 use crate::trans::eid::Eid;
+use crate::trans::Finish;
+use crate::util::align_ceil_chunk;
 use crate::util::crypto::{Cipher, Cost, Crypto, Key};
 use crate::util::lru::{CountMeter, Lru, Meter, PinChecker};
+use crate::util::IntoRef;
 use crate::volume::address::Addr;
+use crate::volume::allocator::Allocator;
+use crate::volume::allocator::AllocatorRef;
 use crate::volume::storage::Storable;
 use crate::BLKS_PER_FRAME;
-use crate::error::{Error, Result};
-use crate::util::IntoRef;
 use crate::BLK_SIZE;
-use crate::util::align_ceil_chunk;
 use crate::FRAME_SIZE;
-use crate::trans::Finish;
 
 // frame cache meter, measured by frame byte size
 #[derive(Debug, Default)]
@@ -237,7 +239,6 @@ impl IntoRef for Storage {}
 /// Storage reference type
 pub type StorageRef = Arc<RwLock<Storage>>;
 
-
 /// Storage Reader
 #[derive(Debug)]
 pub struct Reader {
@@ -297,11 +298,7 @@ impl Reader {
 
     // copy data out from decrypte frame to destination
     // return copied bytes length and flag if frame is exhausted
-    fn copy_frame_out(
-        &self,
-        dst: &mut [u8],
-        dec_frame: &[u8],
-    ) -> (usize, bool) {
+    fn copy_frame_out(&self, dst: &mut [u8], dec_frame: &[u8]) -> (usize, bool) {
         let begin = self.read % self.dec_frame.len();
         let copy_len = min(dst.len(), dec_frame.len() - begin);
         let end = begin + copy_len;
@@ -321,24 +318,17 @@ impl Read for Reader {
         // if decrypted frame has been exhausted and the
         // frame is not in the frame cache, read it from underlying depot
         // and save to cache if it is necessary
-        if self.dec_frame_len == 0
-            && !storage.frame_cache.contains_key(&self.frm_key)
-        {
+        if self.dec_frame_len == 0 && !storage.frame_cache.contains_key(&self.frm_key) {
             // read a frame from depot
             let mut read = 0;
             for loc_span in self.addrs[self.frm_idx].iter() {
                 let read_len = loc_span.span.bytes_len();
                 storage
                     .depot
-                    .get_blocks(
-                        &mut self.frame[read..read + read_len],
-                        loc_span.span,
-                    ).map_err(|err| {
+                    .get_blocks(&mut self.frame[read..read + read_len], loc_span.span)
+                    .map_err(|err| {
                         if err == Error::NotFound {
-                            IoError::new(
-                                ErrorKind::NotFound,
-                                "Blocks not found",
-                            )
+                            IoError::new(ErrorKind::NotFound, "Blocks not found")
                         } else {
                             IoError::new(ErrorKind::Other, err.description())
                         }
@@ -355,22 +345,19 @@ impl Read for Reader {
 
             // and then add the decrypted frame to cache if it is not too big
             if self.ent_len < Storage::FRAME_CACHE_THRESHOLD {
-                storage.frame_cache.insert(
-                    self.frm_key,
-                    self.dec_frame[..self.dec_frame_len].to_vec(),
-                );
+                storage
+                    .frame_cache
+                    .insert(self.frm_key, self.dec_frame[..self.dec_frame_len].to_vec());
             }
         }
 
         // copy decryped frame out to destination
-        let (copy_len, frm_is_exhausted) =
-            if self.ent_len < Storage::FRAME_CACHE_THRESHOLD {
-                let dec_frame =
-                    storage.frame_cache.get_refresh(&self.frm_key).unwrap();
-                self.copy_frame_out(buf, dec_frame)
-            } else {
-                self.copy_frame_out(buf, &self.dec_frame[..self.dec_frame_len])
-            };
+        let (copy_len, frm_is_exhausted) = if self.ent_len < Storage::FRAME_CACHE_THRESHOLD {
+            let dec_frame = storage.frame_cache.get_refresh(&self.frm_key).unwrap();
+            self.copy_frame_out(buf, dec_frame)
+        } else {
+            self.copy_frame_out(buf, &self.dec_frame[..self.dec_frame_len])
+        };
         self.read += copy_len;
 
         // if frame is exhausted, advance to the next frame
@@ -429,11 +416,10 @@ impl Writer {
         let mut storage = self.storage.write().unwrap();
 
         // encrypt source data to frame
-        let enc_len = storage.crypto.encrypt_to(
-            &mut self.frame,
-            &self.stg[..self.stg_len],
-            &storage.key,
-        )?;
+        let enc_len =
+            storage
+                .crypto
+                .encrypt_to(&mut self.frame, &self.stg[..self.stg_len], &storage.key)?;
 
         let blk_cnt = align_ceil_chunk(enc_len, BLK_SIZE);
         let aligned_len = blk_cnt * BLK_SIZE;
@@ -461,8 +447,7 @@ impl Writer {
 impl Write for Writer {
     fn write(&mut self, buf: &[u8]) -> IoResult<usize> {
         let copy_len = min(self.stg.len() - self.stg_len, buf.len());
-        self.stg[self.stg_len..self.stg_len + copy_len]
-            .copy_from_slice(&buf[..copy_len]);
+        self.stg[self.stg_len..self.stg_len + copy_len].copy_from_slice(&buf[..copy_len]);
         self.stg_len += copy_len;
         if self.stg_len >= self.stg.len() {
             // stage buffer is full, encrypt to frame and write to depot

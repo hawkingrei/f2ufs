@@ -3,21 +3,21 @@ use std::path::Path;
 
 use bytes::BufMut;
 
-use crate::trans::eid::Eid;
-use crate::util::collections::HashMap;
-use crate::volume::armor::Arm;  
-use crate::trans::eid::Id;
-use crate::util::lru::PinChecker;
-use crate::util::lru::CountMeter; 
-use crate::util::lru::Lru;
-use crate::util::crypto::HashKey;
-use crate::volume::storage::file::file_armor::FileArmor;
-use crate::volume::armor::ArmAccess;
-use crate::volume::armor::Seq;
 use crate::error::{Error, Result};
-use crate::volume::armor::Armor;
+use crate::trans::eid::Eid;
+use crate::trans::eid::Id;
+use crate::util::collections::HashMap;
 use crate::util::crypto::Crypto;
+use crate::util::crypto::HashKey;
 use crate::util::crypto::Key;
+use crate::util::lru::CountMeter;
+use crate::util::lru::Lru;
+use crate::util::lru::PinChecker;
+use crate::volume::armor::Arm;
+use crate::volume::armor::ArmAccess;
+use crate::volume::armor::Armor;
+use crate::volume::armor::Seq;
+use crate::volume::storage::file::file_armor::FileArmor;
 
 // entity index
 #[derive(Clone, Deserialize, Serialize)]
@@ -50,7 +50,6 @@ impl Id for Index {
         &mut self.id
     }
 }
-
 
 impl Seq for Index {
     #[inline]
@@ -94,7 +93,6 @@ pub struct IndexMgr {
     hash_key: HashKey,
 }
 
-
 impl IndexMgr {
     // index cache size
     const CACHE_SIZE: usize = 32;
@@ -108,12 +106,7 @@ impl IndexMgr {
     }
 
     #[inline]
-    pub fn set_crypto_ctx(
-        &mut self,
-        crypto: Crypto,
-        key: Key,
-        hash_key: HashKey,
-    ) {
+    pub fn set_crypto_ctx(&mut self, crypto: Crypto, key: Key, hash_key: HashKey) {
         self.idx_armor.set_crypto_ctx(crypto, key);
         self.hash_key = hash_key;
     }
