@@ -32,6 +32,8 @@ pub mod trans;
 pub mod util;
 pub mod version;
 pub mod volume;
+pub mod repo;
+pub mod content;
 
 use std::io;
 use std::sync::atomic::AtomicU8;
