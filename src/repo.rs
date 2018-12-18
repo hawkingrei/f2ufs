@@ -3,14 +3,15 @@ use std::io::SeekFrom;
 use std::path::Path;
 use std::time::SystemTime;
 
-use crate::util::crypto::MemLimit;
-use crate::util::crypto::Cipher;
-use crate::util::crypto::OpsLimit;
-use crate::fs::Config;
 use crate::error::{Error, Result};
-use crate::util::time::Time;
-use crate::util::crypto::Cost;
+use crate::fs::Config;
 use crate::trans::eid::Eid;
+use crate::util::crypto::Cipher;
+use crate::util::crypto::Cost;
+use crate::util::crypto::MemLimit;
+use crate::util::crypto::OpsLimit;
+use crate::util::time::Time;
+use crate::util::version::Version;
 
 #[derive(Debug, Default)]
 pub struct RepoOpener {
@@ -301,11 +302,7 @@ impl OpenOptions {
     }
 
     /// Opens a file at path with the options specified by `self`.
-    pub fn open<P: AsRef<Path>>(
-        &self,
-        repo: &mut Repo,
-        path: P,
-    ) -> Result<File> {
+    pub fn open<P: AsRef<Path>>(&self, repo: &mut Repo, path: P) -> Result<File> {
         // version limit must be greater than 0
         if let Some(version_limit) = self.version_limit {
             if version_limit == 0 {
@@ -333,8 +330,6 @@ pub struct RepoInfo {
     read_only: bool,
     ctime: Time,
 }
-
-
 
 impl RepoInfo {
     /// Returns the unique volume id in this repository.
@@ -406,7 +401,6 @@ impl RepoInfo {
         self.ctime.to_system_time()
     }
 }
-
 
 // open a regular file with options
 fn open_file_with_options<P: AsRef<Path>>(
@@ -622,9 +616,7 @@ impl Repo {
     /// `path` must be an absolute path.
     pub fn path_exists<P: AsRef<Path>>(&self, path: P) -> Result<bool> {
         match self.fs {
-            Some(ref fs) => {
-                Ok(fs.resolve(path.as_ref()).map(|_| true).unwrap_or(false))
-            }
+            Some(ref fs) => Ok(fs.resolve(path.as_ref()).map(|_| true).unwrap_or(false)),
             None => Err(Error::Closed),
         }
     }
@@ -783,11 +775,7 @@ impl Repo {
     ///
     /// `from` and `to` must be absolute paths to regular files.
     #[inline]
-    pub fn copy<P: AsRef<Path>, Q: AsRef<Path>>(
-        &mut self,
-        from: P,
-        to: Q,
-    ) -> Result<()> {
+    pub fn copy<P: AsRef<Path>, Q: AsRef<Path>>(&mut self, from: P, to: Q) -> Result<()> {
         match self.fs {
             Some(ref mut fs) => fs.copy(from.as_ref(), to.as_ref()),
             None => Err(Error::Closed),
@@ -833,11 +821,7 @@ impl Repo {
     ///
     /// `from` and `to` must be absolute paths.
     #[inline]
-    pub fn rename<P: AsRef<Path>, Q: AsRef<Path>>(
-        &mut self,
-        from: P,
-        to: Q,
-    ) -> Result<()> {
+    pub fn rename<P: AsRef<Path>, Q: AsRef<Path>>(&mut self, from: P, to: Q) -> Result<()> {
         match self.fs {
             Some(ref mut fs) => fs.rename(from.as_ref(), to.as_ref()),
             None => Err(Error::Closed),

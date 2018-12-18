@@ -19,6 +19,7 @@ macro_rules! map_io_err {
     };
 }
 
+pub mod content;
 pub mod diskptr;
 pub mod error;
 pub mod f2fs;
@@ -26,14 +27,13 @@ pub mod fs;
 pub mod inode;
 pub mod mem_inode;
 pub mod parallel_io;
+pub mod repo;
 pub mod segment;
 pub mod trace;
 pub mod trans;
 pub mod util;
 pub mod version;
 pub mod volume;
-pub mod repo;
-pub mod content;
 
 use std::io;
 use std::sync::atomic::AtomicU8;

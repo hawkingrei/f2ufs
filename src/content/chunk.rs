@@ -2,10 +2,10 @@ use std::fmt::{self, Debug};
 
 use linked_hash_map::LinkedHashMap;
 
-use crate::base::crypto::Hash;
 use crate::base::RefCnt;
 use crate::error::Result;
 use crate::trans::Eid;
+use crate::util::crypto::Hash;
 
 /// Data chunk
 #[derive(Clone, Deserialize, Serialize)]
@@ -14,7 +14,6 @@ pub struct Chunk {
     pub(super) len: usize, // chunk length, in bytes
     refcnt: RefCnt,
 }
-
 
 impl Chunk {
     pub fn new(pos: usize, len: usize) -> Self {
@@ -145,27 +144,26 @@ impl ChunkMap {
         if !self.is_enabled {
             return;
         }
-        self.seg_ids.iter().position(|s| s == seg_id).and_then(
-            |seg_idx| -> Option<()> {
-                self.retain(|_, val| {
-                    val.seg_idx != seg_idx
-                        || !chk_indices.contains(&val.chk_idx)
-                });
+        self.seg_ids
+            .iter()
+            .position(|s| s == seg_id)
+            .and_then(|seg_idx| -> Option<()> {
+                self.retain(|_, val| val.seg_idx != seg_idx || !chk_indices.contains(&val.chk_idx));
                 None
-            },
-        );
+            });
     }
 
     pub fn remove_segment(&mut self, seg_id: &Eid) {
         if !self.is_enabled {
             return;
         }
-        self.seg_ids.iter().position(|s| s == seg_id).and_then(
-            |seg_idx| -> Option<()> {
+        self.seg_ids
+            .iter()
+            .position(|s| s == seg_id)
+            .and_then(|seg_idx| -> Option<()> {
                 self.retain(|_, val| val.seg_idx != seg_idx);
                 None
-            },
-        );
+            });
     }
 }
 

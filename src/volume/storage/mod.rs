@@ -1,6 +1,6 @@
 mod file;
-pub mod storage;
 mod mem;
+pub mod storage;
 
 pub use self::file::FileStorage;
 pub use self::mem::MemStorage;

@@ -1,14 +1,14 @@
 use std::fmt::{self, Debug};
 
-use crate::util::IntoRef;
-use crate::volume::address::Span;
-use crate::BLK_SIZE;
+use crate::error::{Error, Result};
 use crate::trans::eid::Eid;
+use crate::util::collections::HashMap;
 use crate::util::crypto::Crypto;
 use crate::util::crypto::Key;
-use crate::util::collections::HashMap;
+use crate::util::IntoRef;
+use crate::volume::address::Span;
 use crate::volume::storage::Storable;
-use crate::error::{Error, Result};
+use crate::BLK_SIZE;
 
 /// Mem Storage
 #[derive(Clone)]

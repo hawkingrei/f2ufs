@@ -131,8 +131,7 @@ impl<W: Write + Seek> Write for Chunker<W> {
         // copy source data into chunker buffer
         let in_len = min(WTR_BUF_LEN - self.buf_clen, buf.len());
         assert!(in_len > 0);
-        self.buf[self.buf_clen..self.buf_clen + in_len]
-            .copy_from_slice(&buf[..in_len]);
+        self.buf[self.buf_clen..self.buf_clen + in_len].copy_from_slice(&buf[..in_len]);
         self.buf_clen += in_len;
 
         while self.pos < self.buf_clen {
@@ -250,10 +249,7 @@ mod tests {
             let sum = self.chks.iter().fold(0, |sum, ref t| sum + t.len);
             assert_eq!(sum, self.len);
             for i in 0..(self.chks.len() - 2) {
-                assert_eq!(
-                    self.chks[i].pos + self.chks[i].len,
-                    self.chks[i + 1].pos
-                );
+                assert_eq!(self.chks[i].pos + self.chks[i].len, self.chks[i + 1].pos);
             }
 
             Ok(())

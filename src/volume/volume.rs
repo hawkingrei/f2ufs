@@ -6,6 +6,7 @@ use lz4::{Decoder as Lz4Decoder, Encoder as Lz4Encoder, EncoderBuilder as Lz4Enc
 
 use super::super_block::SuperBlk;
 use crate::error::{Error, Result};
+use crate::fs::Config;
 use crate::trans::eid::Eid;
 use crate::trans::Finish;
 use crate::util::crypto::{Cipher, Cost, Salt};
@@ -16,7 +17,6 @@ use crate::volume::allocator::AllocatorRef;
 use crate::volume::storage::storage::{
     Reader as StorageReader, Storage, StorageRef, Writer as StorageWriter,
 };
-use crate::fs::Config;
 
 /// Volume info
 #[derive(Debug, Clone, Default)]
