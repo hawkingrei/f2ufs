@@ -1,3 +1,6 @@
+mod fnode;
+mod fs;
+
 use crate::util::crypto::{Cipher, Cost, Crypto};
 
 // Default file versoin limit
@@ -41,4 +44,14 @@ impl Default for Config {
             opts: Options::default(),
         }
     }
+}
+
+/// Open File Handle
+#[derive(Debug, Clone)]
+pub struct Handle {
+    pub fnode: FnodeRef,
+    pub store: StoreRef,
+    pub txmgr: TxMgrRef,
+    pub vol: VolumeRef,
+    pub shutter: ShutterRef,
 }

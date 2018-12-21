@@ -2,7 +2,7 @@ use std::fmt::{self, Debug};
 
 use linked_hash_map::LinkedHashMap;
 
-use crate::base::RefCnt;
+use crate::util::RefCnt;
 use crate::error::Result;
 use crate::trans::Eid;
 use crate::util::crypto::Hash;
