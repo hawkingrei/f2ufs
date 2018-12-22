@@ -7,7 +7,7 @@ use super::wal::Wal;
 use super::{Eid, EntityType, Id, Txid};
 use crate::error::{Error, Result};
 use crate::util::IntoRef;
-use crate::volume::volume::{Arm, Armor, VolumeRef, VolumeWalArmor};
+use crate::volume::{Arm, Armor, VolumeRef, VolumeWalArmor};
 
 /// Cohort action in transaction
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize, Serialize)]

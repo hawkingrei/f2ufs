@@ -9,8 +9,8 @@ use super::wal::{EntityType, WalQueueMgr};
 use super::{Eid, Txid};
 use crate::error::{Error, Result};
 use crate::util::IntoRef;
-use crate::volume::volume::{Arm, VolumeRef};
-
+use crate::volume::volume::VolumeRef;
+use crate::volume::Arm;
 /// Tranaction manager
 #[derive(Default)]
 pub struct TxMgr {

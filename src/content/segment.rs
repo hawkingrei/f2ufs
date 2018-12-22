@@ -13,6 +13,7 @@ use crate::trans::{Eid, EntityType, Finish, Id, TxMgrRef, Txid};
 use crate::util::lru::{Lru, Meter, PinChecker};
 use crate::util::IntoRef;
 use crate::volume::volume::{Reader as VolReader, VolumeRef, Writer as VolWriter};
+use crate::volume::Arm;
 
 /// Segment Data
 #[derive(Default)]
