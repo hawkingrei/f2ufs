@@ -13,6 +13,9 @@ use crate::util::crypto::OpsLimit;
 use crate::util::time::Time;
 use crate::util::version::Version;
 use crate::fs::fnode::Metadata;
+use crate::fs::fs::Fs;
+use crate::fs::fnode::DirEntry;
+use crate::fs::fs::ShutterRef;
 
 #[derive(Debug, Default)]
 pub struct RepoOpener {
