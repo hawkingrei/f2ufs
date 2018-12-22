@@ -6,16 +6,16 @@ use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 
 use super::fnode::{
-    Cache as FnodeCache, DirEntry, FileType, Fnode, FnodeRef, Metadata,
-    Reader as FnodeReader, Version, Writer as FnodeWriter,
+    Cache as FnodeCache, DirEntry, FileType, Fnode, FnodeRef, Metadata, Reader as FnodeReader,
+    Version, Writer as FnodeWriter,
 };
 use super::{Config, Handle, Options};
-use crate::util::crypto::Cost;
-use crate::util::IntoRef;
 use crate::content::{Store, StoreRef};
 use crate::error::{Error, Result};
 use crate::trans::cow::IntoCow;
 use crate::trans::{Eid, Id, TxMgr, TxMgrRef};
+use crate::util::crypto::Cost;
+use crate::util::IntoRef;
 use crate::volume::{Info as VolumeInfo, Volume, VolumeRef};
 
 /// File system information
@@ -60,12 +60,7 @@ struct Payload {
 }
 
 impl Payload {
-    fn new(
-        root_id: &Eid,
-        walq_id: &Eid,
-        store_id: &Eid,
-        opts: Options,
-    ) -> Self {
+    fn new(root_id: &Eid, walq_id: &Eid, store_id: &Eid, opts: Options) -> Self {
         Payload {
             root_id: root_id.clone(),
             walq_id: walq_id.clone(),
@@ -134,8 +129,7 @@ impl Fs {
         let mut store_ref: Option<StoreRef> = None;
         let mut root_ref: Option<FnodeRef> = None;
         TxMgr::begin_trans(&txmgr)?.run_all(|| {
-            let store_cow =
-                Store::new(&txmgr, &vol).into_cow_with_id(&store_id, &txmgr)?;
+            let store_cow = Store::new(&txmgr, &vol).into_cow_with_id(&store_id, &txmgr)?;
             let root_cow = Fnode::new(FileType::Dir, cfg.opts, &store_cow)
                 .into_cow_with_id(&root_id, &txmgr)?;
             root_ref = Some(root_cow);
@@ -213,12 +207,7 @@ impl Fs {
     }
 
     /// Reset volume password
-    pub fn reset_password(
-        &mut self,
-        old_pwd: &str,
-        new_pwd: &str,
-        cost: Cost,
-    ) -> Result<()> {
+    pub fn reset_password(&mut self, old_pwd: &str, new_pwd: &str, cost: Cost) -> Result<()> {
         if self.read_only {
             return Err(Error::ReadOnly);
         }

@@ -163,12 +163,6 @@ impl Finish for CryptoWriter {
         self.write_frame()?;
         Ok(())
     }
-
-    fn finish_and_flush(mut self) -> Result<()> {
-        self.write_frame()?;
-        self.file.flush()?;
-        Ok(())
-    }
 }
 
 // file armor

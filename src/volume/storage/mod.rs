@@ -13,7 +13,6 @@ use crate::trans::Eid;
 use crate::util::crypto::Crypto;
 use crate::util::crypto::Key;
 use crate::volume::address::Span;
-
 /// Storable trait
 pub trait Storable: Debug + Send + Sync {
     // check if storage exists
@@ -28,25 +27,32 @@ pub trait Storable: Debug + Send + Sync {
     // open a storage
     fn open(&mut self, crypto: Crypto, key: Key) -> Result<()>;
 
-    // close a storage
-    fn close(&mut self) -> Result<()>;
-
-    // super block operations
+    // super block read/write, must not buffered
+    // write no need to be atomic, but must gurantee any successful
+    // write is persistent
     fn get_super_block(&mut self, suffix: u64) -> Result<Vec<u8>>;
     fn put_super_block(&mut self, super_blk: &[u8], suffix: u64) -> Result<()>;
 
-    // address operations
+    // wal read/write, must not buffered
+    // update no need to be atomic, but must gurantee any successful
+    // update is persistent
+    fn get_wal(&mut self, id: &Eid) -> Result<Vec<u8>>;
+    fn put_wal(&mut self, id: &Eid, wal: &[u8]) -> Result<()>;
+    fn del_wal(&mut self, id: &Eid) -> Result<()>;
+
+    // address read/write, can be buffered
+    // storage doesn't need to gurantee update is persistent
     fn get_address(&mut self, id: &Eid) -> Result<Vec<u8>>;
     fn put_address(&mut self, id: &Eid, addr: &[u8]) -> Result<()>;
     fn del_address(&mut self, id: &Eid) -> Result<()>;
 
-    // block operations
+    // block read/write, can be buffered
+    // storage doesn't need to gurantee update is persistent
     fn get_blocks(&mut self, dst: &mut [u8], span: Span) -> Result<()>;
     fn put_blocks(&mut self, span: Span, blks: &[u8]) -> Result<()>;
     fn del_blocks(&mut self, span: Span) -> Result<()>;
 
-    // flush to storage
-    fn flush(&mut self) -> Result<()> {
-        Ok(())
-    }
+    // flush possibly buffered address and block to storage
+    // storage must gurantee write is persistent
+    fn flush(&mut self) -> Result<()>;
 }

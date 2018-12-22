@@ -23,6 +23,7 @@ pub mod content;
 pub mod diskptr;
 pub mod error;
 pub mod f2fs;
+pub mod file;
 pub mod fs;
 pub mod inode;
 pub mod mem_inode;

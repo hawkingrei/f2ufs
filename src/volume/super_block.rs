@@ -7,7 +7,7 @@ use crate::trans::eid::Eid;
 use crate::util::crypto::{Cipher, Cost, Crypto, Key, Salt, SALT_SIZE};
 use crate::util::time::Time;
 use crate::util::version::Version;
-use crate::volume::storage::Storable;
+use crate::volume::storage::Storage;
 use crate::BLK_SIZE;
 
 /// Super block head, not encrypted
@@ -87,7 +87,7 @@ impl SuperBlk {
     const MAGIC: [u8; 4] = [233, 239, 241, 251];
 
     // save super block
-    pub fn save(&mut self, pwd: &str, depot: &mut Storable) -> Result<()> {
+    pub fn save(&mut self, pwd: &str, storage: &mut Storage) -> Result<()> {
         let crypto = Crypto::new(self.head.cost, self.head.cipher)?;
 
         // hash user specified plaintext password
@@ -117,15 +117,15 @@ impl SuperBlk {
         let mut buf = Vec::new();
         buf.put(&head_buf);
         buf.put(&enc_buf);
-        depot.put_super_block(&buf, self.body.seq % 2)?;
+        storage.put_super_block(&buf, self.body.seq % 2)?;
 
         Ok(())
     }
 
     // load a specific super block arm
-    fn load_arm(suffix: u64, pwd: &str, depot: &mut Storable) -> Result<Self> {
+    fn load_arm(suffix: u64, pwd: &str, storage: &mut Storage) -> Result<Self> {
         // read raw bytes
-        let buf = depot.get_super_block(suffix)?;
+        let buf = storage.get_super_block(suffix)?;
 
         // read header
         let head = Head::deseri(&buf)?;
@@ -148,9 +148,9 @@ impl SuperBlk {
     }
 
     // load super block
-    pub fn load(pwd: &str, depot: &mut Storable) -> Result<Self> {
-        let left_arm = Self::load_arm(0, pwd, depot);
-        let right_arm = Self::load_arm(1, pwd, depot);
+    pub fn load(pwd: &str, storage: &mut Storage) -> Result<Self> {
+        let left_arm = Self::load_arm(0, pwd, storage);
+        let right_arm = Self::load_arm(1, pwd, storage);
 
         match left_arm {
             Ok(left) => match right_arm {

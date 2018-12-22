@@ -7,14 +7,12 @@ use std::sync::Arc;
 use std::time::SystemTime;
 
 use super::{Handle, Options};
-use crate::util::lru::{CountMeter, Lru, PinChecker};
-use crate::util::Time;
-use crate::content::{
-    ChunkMap, Content, ContentReader, StoreRef, Writer as StoreWriter,
-};
+use crate::content::{ChunkMap, Content, ContentReader, StoreRef, Writer as StoreWriter};
 use crate::error::{Error, Result};
 use crate::trans::cow::{Cow, CowCache, CowRef, CowWeakRef, Cowable, IntoCow};
 use crate::trans::{Eid, Id, TxMgrRef, Txid};
+use crate::util::lru::{CountMeter, Lru, PinChecker};
+use crate::util::Time;
 use crate::volume::VolumeRef;
 
 // maximum sub nodes for a fnode
@@ -196,12 +194,7 @@ impl DirEntry {
     }
 }
 
-type SubNodes = Lru<
-    String,
-    FnodeWeakRef,
-    CountMeter<FnodeWeakRef>,
-    PinChecker<FnodeWeakRef>,
->;
+type SubNodes = Lru<String, FnodeWeakRef, CountMeter<FnodeWeakRef>, PinChecker<FnodeWeakRef>>;
 
 /// File node
 #[derive(Default, Clone, Deserialize, Serialize)]
@@ -368,9 +361,8 @@ impl Fnode {
             .iter()
             .find(|ref c| c.name == name)
             .ok_or(Error::NotFound)
+            .and_then(|child| cache.get(&child.id, vol).map_err(|e| Error::from(e)))
             .and_then(|child| {
-                cache.get(&child.id, vol).map_err(|e| Error::from(e))
-            }).and_then(|child| {
                 // set parent, store and volume for the child
                 {
                     let mut child_cow = child.write().unwrap();
@@ -444,8 +436,7 @@ impl Fnode {
         let child_names = par.children_names();
 
         for name in child_names.iter() {
-            let child_ref =
-                par.load_child(&name, parent.clone(), cache, vol)?;
+            let child_ref = par.load_child(&name, parent.clone(), cache, vol)?;
             let child = child_ref.read().unwrap();
             ret.push(DirEntry {
                 path: parent_path.join(name),
@@ -458,11 +449,7 @@ impl Fnode {
     }
 
     /// Add child to parent fnode
-    pub fn add_child(
-        parent: &FnodeRef,
-        child: &FnodeRef,
-        name: &str,
-    ) -> Result<()> {
+    pub fn add_child(parent: &FnodeRef, child: &FnodeRef, name: &str) -> Result<()> {
         let mut parent_cow = parent.write().unwrap();
         let par = parent_cow.make_mut()?;
 
@@ -565,8 +552,7 @@ impl Fnode {
         };
 
         // create a new version
-        let ver =
-            Version::new(self.curr_ver_num() + 1, &deduped_id, content.len());
+        let ver = Version::new(self.curr_ver_num() + 1, &deduped_id, content.len());
         self.mtime = ver.ctime;
         self.vers.push_back(ver);
 
@@ -722,8 +708,7 @@ impl Writer {
             let f = handle.fnode.read().unwrap();
             f.chk_map.clone()
         };
-        let inner =
-            StoreWriter::new(chk_map, &handle.txmgr, &handle.store, txid);
+        let inner = StoreWriter::new(chk_map, &handle.txmgr, &handle.store, txid);
         Writer { inner, handle }
     }
 

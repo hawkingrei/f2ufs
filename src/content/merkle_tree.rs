@@ -2,9 +2,9 @@ use std::cmp::{max, min};
 use std::fmt::{self, Debug};
 use std::io::{Read, Result as IoResult, Seek, SeekFrom, Write};
 
-use crate::util::crypto::{Crypto, Hash, HashState};
-use crate::util;
 use crate::error::Result;
+use crate::util;
+use crate::util::crypto::{Crypto, Hash, HashState};
 
 // data piece size, must be 2^n
 const PIECE_SIZE: usize = 256 * 1024;
@@ -117,12 +117,7 @@ impl MerkleTree {
     }
 
     // calculate hash from its children nodes' indices
-    fn hash_up(
-        &mut self,
-        indices: &[usize],
-        lvl_begin: usize,
-        lvl_node_cnt: usize,
-    ) {
+    fn hash_up(&mut self, indices: &[usize], lvl_begin: usize, lvl_node_cnt: usize) {
         assert!(indices.len() == 1 || indices.len() == 2);
         let m = indices[0];
         let parent = parent(m, lvl_begin, lvl_node_cnt);
@@ -169,11 +164,7 @@ impl MerkleTree {
     }
 
     // merge other merkle tree to self
-    pub fn merge<R: Read + Seek>(
-        &mut self,
-        leaves: &Leaves,
-        rdr: &mut R,
-    ) -> Result<()> {
+    pub fn merge<R: Read + Seek>(&mut self, leaves: &Leaves, rdr: &mut R) -> Result<()> {
         assert!(leaves.offset <= self.len);
 
         let end_offset = max(self.len, leaves.end_offset());
@@ -183,17 +174,14 @@ impl MerkleTree {
         let mut old_begin = self.inner_cnt();
         let old_leaf_cnt = self.leaf_cnt();
 
-        let mut overlap_begin =
-            leaves_begin + align_piece_floor_chunk(leaves.offset);
+        let mut overlap_begin = leaves_begin + align_piece_floor_chunk(leaves.offset);
         let overlap_end_offset = min(self.len, leaves.end_offset());
-        let mut overlap_end =
-            leaves_begin + align_piece_ceil_chunk(overlap_end_offset);
+        let mut overlap_end = leaves_begin + align_piece_ceil_chunk(overlap_end_offset);
 
         // resize nodes and move old leaf nodes
         let old_leaves = self.nodes[old_begin..].to_vec();
         self.nodes.resize(node_cnt, Hash::new_empty());
-        self.nodes[leaves_begin..leaves_begin + old_leaves.len()]
-            .clone_from_slice(&old_leaves[..]);
+        self.nodes[leaves_begin..leaves_begin + old_leaves.len()].clone_from_slice(&old_leaves[..]);
 
         // copy in leave nodes
         &self.nodes[overlap_begin..overlap_begin + leaves.nodes.len()]
@@ -222,11 +210,7 @@ impl MerkleTree {
                 if pair.len() == 2 && pair[1] < overlap_begin {
                     // copy hash from old tree
                     let parent_node = parent(pair[0], begin, lvl_node_cnt);
-                    let old = parent(
-                        old_begin + pair[0] - begin,
-                        old_begin,
-                        old_lvl_node_cnt,
-                    );
+                    let old = parent(old_begin + pair[0] - begin, old_begin, old_lvl_node_cnt);
                     assert!(parent_node >= old);
                     if old != parent_node {
                         self.nodes[parent_node] = self.nodes[old].clone();
@@ -253,11 +237,7 @@ impl MerkleTree {
     }
 
     // truncate pieces and re-calculate merkle tree
-    pub fn truncate<R: Read + Seek>(
-        &mut self,
-        at: usize,
-        rdr: &mut R,
-    ) -> Result<()> {
+    pub fn truncate<R: Read + Seek>(&mut self, at: usize, rdr: &mut R) -> Result<()> {
         assert!(at <= self.len);
 
         if at == self.len {
@@ -274,8 +254,7 @@ impl MerkleTree {
 
         // copy leaf nodes
         let src = self.inner_cnt();
-        new.nodes[leaves_begin..]
-            .clone_from_slice(&self.nodes[src..src + leaf_cnt]);
+        new.nodes[leaves_begin..].clone_from_slice(&self.nodes[src..src + leaf_cnt]);
 
         // re-hash the last piece at cut position
         if align_piece_offset(at) != 0 || at == 0 {
@@ -296,8 +275,7 @@ impl MerkleTree {
             let src_begin = parent(old_begin, old_begin, old_lvl_node_cnt);
             let src_end = parent(old_end - 1, old_begin, old_lvl_node_cnt) + 1;
             assert_eq!(dst_end - dst_begin, src_end - src_begin);
-            &new.nodes[dst_begin..dst_end]
-                .clone_from_slice(&self.nodes[src_begin..src_end]);
+            &new.nodes[dst_begin..dst_end].clone_from_slice(&self.nodes[src_begin..src_end]);
 
             // re-hash the last node
             if (end - begin) & 1 == 0 {
@@ -361,10 +339,7 @@ impl Write for Writer {
             let pos = align_piece_offset(self.hash_offset);
             let hash_len = min(PIECE_SIZE - pos, data_len - data_pos);
 
-            Crypto::hash_update(
-                &mut self.state,
-                &data[data_pos..data_pos + hash_len],
-            );
+            Crypto::hash_update(&mut self.state, &data[data_pos..data_pos + hash_len]);
 
             // reached piece boundary, finish its hash and start a new round
             if align_piece_offset(self.hash_offset + hash_len) <= pos {

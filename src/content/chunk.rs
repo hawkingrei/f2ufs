@@ -2,10 +2,10 @@ use std::fmt::{self, Debug};
 
 use linked_hash_map::LinkedHashMap;
 
-use crate::util::RefCnt;
 use crate::error::Result;
 use crate::trans::Eid;
 use crate::util::crypto::Hash;
+use crate::util::refcnt::RefCnt;
 
 /// Data chunk
 #[derive(Clone, Deserialize, Serialize)]

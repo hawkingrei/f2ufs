@@ -1,10 +1,7 @@
 use std::cmp::min;
 use std::error::Error as StdError;
 use std::fmt::{self, Debug};
-use std::io::{
-    Error as IoError, ErrorKind, Read, Result as IoResult, Seek, SeekFrom,
-    Write,
-};
+use std::io::{Error as IoError, ErrorKind, Read, Result as IoResult, Seek, SeekFrom, Write};
 
 use super::chunk::ChunkMap;
 use super::entry::{CutableList, EntryList};
@@ -12,10 +9,10 @@ use super::merkle_tree::{Leaves, MerkleTree, Writer as MerkleTreeWriter};
 use super::segment::Writer as SegWriter;
 use super::span::{Extent, Span};
 use super::StoreRef;
-use crate::util::crypto::{Crypto, Hash};
 use crate::error::Result;
 use crate::trans::cow::{CowCache, CowRef, Cowable, IntoCow};
 use crate::trans::{Eid, Finish, Id, TxMgrRef, Txid};
+use crate::util::crypto::{Crypto, Hash};
 use crate::volume::VolumeRef;
 
 /// Content
@@ -60,11 +57,7 @@ impl Content {
     }
 
     /// Write into content with another content
-    pub fn merge_from(
-        &mut self,
-        other: &Content,
-        store: &StoreRef,
-    ) -> Result<()> {
+    pub fn merge_from(&mut self, other: &Content, store: &StoreRef) -> Result<()> {
         // write other content into self
         {
             let store = store.read().unwrap();
@@ -105,22 +98,14 @@ impl Content {
 
     // remove reference between content and segment
     #[inline]
-    pub fn unlink(
-        &self,
-        chk_map: &mut ChunkMap,
-        store: &StoreRef,
-    ) -> Result<()> {
+    pub fn unlink(&self, chk_map: &mut ChunkMap, store: &StoreRef) -> Result<()> {
         let mut store = store.write().unwrap();
         self.ents.unlink(chk_map, store.make_mut()?)
     }
 
     // remove weak reference between content and segment
     #[inline]
-    pub fn unlink_weak(
-        &self,
-        chk_map: &mut ChunkMap,
-        store: &StoreRef,
-    ) -> Result<()> {
+    pub fn unlink_weak(&self, chk_map: &mut ChunkMap, store: &StoreRef) -> Result<()> {
         let mut store = store.write().unwrap();
         self.ents.unlink_weak(chk_map, store.make_mut()?)
     }
@@ -279,8 +264,7 @@ impl Writer {
         let seg_ref = self.seg_wtr.seg();
         let seg = seg_ref.read().unwrap();
         let begin = seg.chunk_cnt() - 1;
-        let span =
-            Span::new(begin, begin + 1, 0, chunk_len, self.ctn.end_offset());
+        let span = Span::new(begin, begin + 1, 0, chunk_len, self.ctn.end_offset());
         self.ctn.append(seg.id(), &span);
 
         // and update chunk map
@@ -330,13 +314,7 @@ impl Write for Writer {
             // is finished and deduped
             let ref_seg = rseg.write().unwrap();
             let chunk = &ref_seg[loc.idx];
-            let span = Span::new(
-                loc.idx,
-                loc.idx + 1,
-                0,
-                chunk.len,
-                self.ctn.end_offset(),
-            );
+            let span = Span::new(loc.idx, loc.idx + 1, 0, chunk.len, self.ctn.end_offset());
             self.ctn.append(&loc.seg_id, &span);
             assert_eq!(chunk_len, chunk.len);
         } else {

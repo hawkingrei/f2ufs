@@ -1,7 +1,12 @@
-mod fnode;
-mod fs;
+pub mod fnode;
+pub mod fs;
 
+use crate::content::store::StoreRef;
+use crate::fs::fnode::FnodeRef;
+use crate::fs::fs::ShutterRef;
+use crate::trans::txmgr::TxMgrRef;
 use crate::util::crypto::{Cipher, Cost, Crypto};
+use crate::volume::volume::VolumeRef;
 
 // Default file versoin limit
 const DEFAULT_VERSION_LIMIT: u8 = 10;

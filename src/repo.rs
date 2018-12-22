@@ -4,6 +4,12 @@ use std::path::Path;
 use std::time::SystemTime;
 
 use crate::error::{Error, Result};
+use crate::file::File;
+use crate::fs::fnode::DirEntry;
+use crate::fs::fnode::Metadata;
+use crate::fs::fnode::Version;
+use crate::fs::fs::Fs;
+use crate::fs::fs::ShutterRef;
 use crate::fs::Config;
 use crate::trans::eid::Eid;
 use crate::util::crypto::Cipher;
@@ -11,11 +17,7 @@ use crate::util::crypto::Cost;
 use crate::util::crypto::MemLimit;
 use crate::util::crypto::OpsLimit;
 use crate::util::time::Time;
-use crate::util::version::Version;
-use crate::fs::fnode::Metadata;
-use crate::fs::fs::Fs;
-use crate::fs::fnode::DirEntry;
-use crate::fs::fs::ShutterRef;
+use crate::util::version;
 
 #[derive(Debug, Default)]
 pub struct RepoOpener {
@@ -324,7 +326,7 @@ impl OpenOptions {
 #[derive(Debug)]
 pub struct RepoInfo {
     volume_id: Eid,
-    ver: base::Version,
+    ver: version::Version,
     uri: String,
     cost: Cost,
     cipher: Cipher,
@@ -565,15 +567,6 @@ impl Repo {
     fn open(uri: &str, pwd: &str, read_only: bool) -> Result<Repo> {
         let fs = Fs::open(uri, pwd, read_only)?;
         Ok(Repo { fs: Some(fs) })
-    }
-
-    // close repo
-    #[inline]
-    pub fn close(&mut self) -> Result<()> {
-        match self.fs.take() {
-            Some(mut fs) => fs.close(),
-            None => Ok(()),
-        }
     }
 
     /// Get repository metadata infomation.

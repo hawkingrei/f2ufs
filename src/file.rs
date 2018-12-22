@@ -3,9 +3,7 @@ use std::fmt::{self, Debug};
 use std::io::{self, Error as IoError, ErrorKind, Read, Seek, SeekFrom, Write};
 
 use crate::error::{Error, Result};
-use crate::fs::fnode::{
-    Fnode, Metadata, Reader as FnodeReader, Version, Writer as FnodeWriter,
-};
+use crate::fs::fnode::{Fnode, Metadata, Reader as FnodeReader, Version, Writer as FnodeWriter};
 use crate::fs::Handle;
 use crate::trans::{TxHandle, TxMgr};
 
@@ -282,12 +280,7 @@ pub struct File {
 }
 
 impl File {
-    pub(super) fn new(
-        handle: Handle,
-        pos: SeekFrom,
-        can_read: bool,
-        can_write: bool,
-    ) -> Self {
+    pub(super) fn new(handle: Handle, pos: SeekFrom, can_read: bool, can_write: bool) -> Self {
         File {
             handle,
             pos,
@@ -503,9 +496,7 @@ impl File {
         }
 
         let tx_handle = TxMgr::begin_trans(&self.handle.txmgr)?;
-        tx_handle.run_all(|| {
-            Fnode::set_len(self.handle.clone(), len, tx_handle.txid)
-        })?;
+        tx_handle.run_all(|| Fnode::set_len(self.handle.clone(), len, tx_handle.txid))?;
 
         // re-create reader if there is an existing reader
         if !self.rdr.is_none() {

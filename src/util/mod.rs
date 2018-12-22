@@ -2,6 +2,7 @@ pub mod collections;
 pub mod crypto;
 pub mod little_endian;
 pub mod lru;
+pub mod refcnt;
 pub mod time;
 pub mod version;
 

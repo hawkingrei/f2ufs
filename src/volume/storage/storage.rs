@@ -88,13 +88,8 @@ impl Storage {
     }
 
     #[inline]
-    pub fn depot_mut(&mut self) -> &mut Storable {
-        self.depot.deref_mut()
-    }
-
-    #[inline]
-    pub fn crypto_ctx(&self) -> (&Crypto, &Key) {
-        (&self.crypto, &self.key)
+    pub fn get_key(&self) -> &Key {
+        &self.key
     }
 
     #[inline]
@@ -125,13 +120,18 @@ impl Storage {
     }
 
     #[inline]
-    pub fn close(&mut self) -> Result<()> {
-        self.depot.close()
+    pub fn get_allocator(&self) -> AllocatorRef {
+        self.allocator.clone()
     }
 
     #[inline]
-    pub fn allocator(&self) -> AllocatorRef {
-        self.allocator.clone()
+    pub fn get_super_block(&mut self, suffix: u64) -> Result<Vec<u8>> {
+        self.depot.get_super_block(suffix)
+    }
+
+    #[inline]
+    pub fn put_super_block(&mut self, super_blk: &[u8], suffix: u64) -> Result<()> {
+        self.depot.put_super_block(super_blk, suffix)
     }
 
     // read entity address from depot and save to address cache
@@ -192,18 +192,9 @@ impl Storage {
         Ok(())
     }
 
-    fn write_new_address(&mut self, id: &Eid, addr: &Addr) -> Result<()> {
-        // if the old address exists, remove all of its blocks
-        match self.get_address(id) {
-            Ok(old_addr) => {
-                self.remove_address_blocks(&old_addr)?;
-            }
-            Err(ref err) if *err == Error::NotFound => {}
-            Err(err) => return Err(err),
-        }
-
-        // write new address
-        self.put_address(id, addr)
+    #[inline]
+    pub fn del_wal(&mut self, id: &Eid) -> Result<()> {
+        self.depot.del_wal(id)
     }
 
     pub fn del(&mut self, id: &Eid) -> Result<()> {
@@ -223,6 +214,12 @@ impl Storage {
 
         Ok(())
     }
+
+    // flush underlying storage
+    #[inline]
+    pub fn flush(&mut self) -> Result<()> {
+        self.depot.flush()
+    }
 }
 
 impl Debug for Storage {
@@ -238,6 +235,52 @@ impl IntoRef for Storage {}
 
 /// Storage reference type
 pub type StorageRef = Arc<RwLock<Storage>>;
+
+/// Storage Wal Reader
+#[derive(Debug)]
+pub struct WalReader {
+    id: Eid,
+    storage: StorageRef,
+    read: usize,
+    wal: Vec<u8>,
+}
+
+impl WalReader {
+    pub fn new(id: &Eid, storage: &StorageRef) -> Self {
+        WalReader {
+            id: id.clone(),
+            storage: storage.clone(),
+            read: 0,
+            wal: Vec::new(),
+        }
+    }
+}
+
+impl Read for WalReader {
+    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+        if self.wal.is_empty() {
+            let mut storage = self.storage.write().unwrap();
+
+            // read wal bytes from underlying storage layer
+            let wal = storage.depot.get_wal(&self.id).map_err(|err| {
+                if err == Error::NotFound {
+                    IoError::new(ErrorKind::NotFound, "Wal not found")
+                } else {
+                    IoError::new(ErrorKind::Other, err.description())
+                }
+            })?;
+
+            // decrypt wal
+            self.wal = map_io_err!(storage.crypto.decrypt(&wal, &storage.key,))?;
+        }
+
+        let copy_len = min(self.wal.len() - self.read, buf.len());
+        buf[..copy_len].copy_from_slice(&self.wal[self.read..self.read + copy_len]);
+        self.read += copy_len;
+
+        Ok(copy_len)
+    }
+}
 
 /// Storage Reader
 #[derive(Debug)]
@@ -373,6 +416,46 @@ impl Read for Reader {
     }
 }
 
+/// Storage Wal Writer
+pub struct WalWriter {
+    id: Eid,
+    storage: StorageRef,
+    wal: Vec<u8>,
+}
+
+impl WalWriter {
+    pub fn new(id: &Eid, storage: &StorageRef) -> Self {
+        WalWriter {
+            id: id.clone(),
+            storage: storage.clone(),
+            wal: Vec::new(),
+        }
+    }
+}
+
+impl Write for WalWriter {
+    fn write(&mut self, buf: &[u8]) -> IoResult<usize> {
+        self.wal.extend_from_slice(buf);
+        Ok(buf.len())
+    }
+
+    #[inline]
+    fn flush(&mut self) -> IoResult<()> {
+        // no-op here, call finish() to complete the writing
+        Ok(())
+    }
+}
+
+impl Finish for WalWriter {
+    fn finish(self) -> Result<()> {
+        let mut storage = self.storage.write().unwrap();
+
+        // encrypt wal and save to underlying storage
+        let enc = storage.crypto.encrypt(&self.wal, &storage.key)?;
+        storage.depot.put_wal(&self.id, &enc)
+    }
+}
+
 /// Storage Writer
 pub struct Writer {
     id: Eid,
@@ -429,7 +512,8 @@ impl Writer {
 
         // allocate blocks
         let span = {
-            let mut allocator = storage.allocator.write().unwrap();
+            let allocator_ref = storage.get_allocator();
+            let mut allocator = allocator_ref.write().unwrap();
             allocator.allocate(blk_cnt)
         };
 
@@ -456,23 +540,379 @@ impl Write for Writer {
         Ok(copy_len)
     }
 
+    #[inline]
     fn flush(&mut self) -> IoResult<()> {
+        // no-op here, call finish() to complete the writing
         Ok(())
     }
 }
 
 impl Finish for Writer {
     fn finish(mut self) -> Result<()> {
+        // write data frame
         self.write_frame()?;
+
+        // if the old address exists, remove all of its blocks
         let mut storage = self.storage.write().unwrap();
-        storage.write_new_address(&self.id, &self.addr)
+        match storage.get_address(&self.id) {
+            Ok(old_addr) => {
+                storage.remove_address_blocks(&old_addr)?;
+            }
+            Err(ref err) if *err == Error::NotFound => {}
+            Err(err) => return Err(err),
+        }
+
+        // write new address
+        storage.put_address(&self.id, &self.addr)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    extern crate tempdir;
+
+    use std::env;
+    use std::fs;
+    use std::time::Instant;
+
+    use self::tempdir::TempDir;
+    use super::*;
+    use base::crypto::{Cipher, Cost, Crypto, RandomSeed, RANDOM_SEED_SIZE};
+    use base::init_env;
+    use base::utils::speed_str;
+    use volume::address::Span;
+
+    struct SizeVar {
+        blk_size: usize,
+        frm_size: usize,
+        enc_blk_size: usize,
+        enc_frm_size: usize,
+        dec_blk_size: usize,
+        dec_frm_size: usize,
     }
 
-    fn finish_and_flush(mut self) -> Result<()> {
-        self.write_frame()?;
-        let mut storage = self.storage.write().unwrap();
-        storage.write_new_address(&self.id, &self.addr)?;
-        storage.depot.flush()?;
-        Ok(())
+    impl SizeVar {
+        fn new(storage: &StorageRef) -> Self {
+            let storage = storage.read().unwrap();
+            let crypto = &storage.crypto;
+            SizeVar {
+                blk_size: BLK_SIZE,
+                frm_size: FRAME_SIZE,
+                enc_blk_size: crypto.encrypted_len(BLK_SIZE),
+                enc_frm_size: crypto.encrypted_len(FRAME_SIZE),
+                dec_blk_size: crypto.decrypted_len(BLK_SIZE),
+                dec_frm_size: crypto.decrypted_len(FRAME_SIZE),
+            }
+        }
+    }
+
+    fn single_read_write(buf_len: usize, storage: &StorageRef) {
+        let id = Eid::new();
+        let mut buf = vec![0u8; buf_len];
+        *buf.first_mut().unwrap() = 42;
+        *buf.last_mut().unwrap() = 42;
+
+        // write
+        let mut wtr = Writer::new(&id, storage);
+        wtr.write_all(&buf).unwrap();
+        wtr.finish().unwrap();
+
+        // read
+        let mut rdr = Reader::new(&id, storage).unwrap();
+        let mut dst = Vec::new();
+        rdr.read_to_end(&mut dst).unwrap();
+        assert_eq!(&buf[..], &dst[..]);
+    }
+
+    fn multi_read_write(buf_len: usize, frm_size: usize, storage: &StorageRef) {
+        let (id, id2) = (Eid::new(), Eid::new());
+
+        let mut buf = vec![0u8; buf_len];
+        let mut buf2 = vec![0u8; buf_len];
+        *buf.first_mut().unwrap() = 42;
+        *buf.last_mut().unwrap() = 42;
+        *buf2.first_mut().unwrap() = 43;
+        *buf2.last_mut().unwrap() = 43;
+
+        // write
+        let mut wtr = Writer::new(&id, storage);
+        let mut wtr2 = Writer::new(&id2, storage);
+        let mut written = 0;
+        while written < buf_len {
+            let wlen = min(frm_size, buf_len - written);
+            let w = wtr.write(&buf[written..written + wlen]).unwrap();
+            let w2 = wtr2.write(&buf2[written..written + wlen]).unwrap();
+            assert_eq!(w, w2);
+            written += w;
+        }
+        wtr.finish().unwrap();
+        wtr2.finish().unwrap();
+
+        // read
+        let mut rdr = Reader::new(&id, storage).unwrap();
+        let mut rdr2 = Reader::new(&id2, storage).unwrap();
+        let mut dst = Vec::new();
+        rdr.read_to_end(&mut dst).unwrap();
+        assert_eq!(buf.len(), dst.len());
+        assert_eq!(&buf[..], &dst[..]);
+        dst.truncate(0);
+        rdr2.read_to_end(&mut dst).unwrap();
+        assert_eq!(buf2.len(), dst.len());
+        assert_eq!(&buf2[..], &dst[..]);
+    }
+
+    fn single_span_addr_test(storage: &StorageRef) {
+        let size = SizeVar::new(storage);
+
+        // case #1, basic
+        single_read_write(3, storage);
+
+        // case #2, block boundary
+        single_read_write(size.blk_size, storage);
+        single_read_write(size.enc_blk_size, storage);
+        single_read_write(size.dec_blk_size, storage);
+        single_read_write(2 * size.blk_size, storage);
+        single_read_write(2 * size.enc_blk_size, storage);
+        single_read_write(2 * size.dec_blk_size, storage);
+
+        // case #3, frame boundary
+        single_read_write(size.frm_size, storage);
+        single_read_write(size.enc_frm_size, storage);
+        single_read_write(size.dec_frm_size, storage);
+        single_read_write(2 * size.frm_size, storage);
+        single_read_write(2 * size.enc_frm_size, storage);
+        single_read_write(2 * size.dec_frm_size, storage);
+    }
+
+    fn multi_span_addr_test(storage: &StorageRef) {
+        let size = SizeVar::new(storage);
+        multi_read_write(size.frm_size, size.frm_size, storage);
+        multi_read_write(size.enc_frm_size, size.frm_size, storage);
+        multi_read_write(size.dec_frm_size, size.frm_size, storage);
+        multi_read_write(2 * size.frm_size, size.frm_size, storage);
+        multi_read_write(2 * size.enc_frm_size, size.frm_size, storage);
+        multi_read_write(2 * size.dec_frm_size, size.frm_size, storage);
+    }
+
+    fn overwrite_test(storage: &StorageRef) {
+        let id = Eid::new();
+        let mut buf = vec![0u8; 3];
+        *buf.first_mut().unwrap() = 42;
+        *buf.last_mut().unwrap() = 42;
+
+        // write #1
+        let mut wtr = Writer::new(&id, storage);
+        wtr.write_all(&buf).unwrap();
+        wtr.finish().unwrap();
+
+        // read
+        let mut rdr = Reader::new(&id, storage).unwrap();
+        let mut dst = Vec::new();
+        rdr.read_to_end(&mut dst).unwrap();
+        assert_eq!(&buf[..], &dst[..]);
+
+        // write #2
+        *buf.first_mut().unwrap() = 43;
+        *buf.last_mut().unwrap() = 43;
+        let mut wtr = Writer::new(&id, storage);
+        wtr.write_all(&buf).unwrap();
+        wtr.finish().unwrap();
+
+        // read
+        let mut rdr = Reader::new(&id, storage).unwrap();
+        let mut dst = Vec::new();
+        rdr.read_to_end(&mut dst).unwrap();
+        assert_eq!(&buf[..], &dst[..]);
+    }
+
+    fn delete_test(storage: &StorageRef) {
+        let id = Eid::new();
+        let buf = vec![0u8; 3];
+
+        // write #1
+        let mut wtr = Writer::new(&id, storage);
+        wtr.write_all(&buf).unwrap();
+        wtr.finish().unwrap();
+
+        // read
+        let mut rdr = Reader::new(&id, storage).unwrap();
+        let mut dst = Vec::new();
+        rdr.read_to_end(&mut dst).unwrap();
+
+        // delete
+        {
+            let mut storage = storage.write().unwrap();
+            storage.del(&id).unwrap();
+            // delete again
+            storage.del(&id).unwrap();
+        }
+
+        // read again will fail
+        assert_eq!(Reader::new(&id, storage).unwrap_err(), Error::NotFound);
+    }
+
+    fn test_depot(storage: StorageRef) {
+        single_span_addr_test(&storage);
+        multi_span_addr_test(&storage);
+        overwrite_test(&storage);
+        delete_test(&storage);
+    }
+
+    #[test]
+    fn mem_depot() {
+        init_env();
+        let storage = Storage::new("mem://foo").unwrap();
+        assert!(!storage.exists().unwrap());
+        test_depot(storage.into_ref());
+    }
+
+    #[test]
+    fn file_depot() {
+        init_env();
+        let tmpdir = TempDir::new("zbox_test").expect("Create temp dir failed");
+        let uri = format!("file://{}", tmpdir.path().display());
+        let storage = Storage::new(&uri).unwrap();
+        test_depot(storage.into_ref());
+    }
+
+    #[cfg(feature = "storage-sqlite")]
+    #[test]
+    fn sqlite_depot() {
+        init_env();
+        let mut storage = Storage::new("sqlite://:memory:").unwrap();
+        storage.connect().unwrap();
+        storage.init(Cost::default(), Cipher::default()).unwrap();
+        test_depot(storage.into_ref());
+    }
+
+    #[cfg(feature = "storage-redis")]
+    #[test]
+    fn redis_depot() {
+        init_env();
+        let mut storage = Storage::new("redis://127.0.0.1").unwrap();
+        storage.connect().unwrap();
+        storage.init(Cost::default(), Cipher::default()).unwrap();
+        test_depot(storage.into_ref());
+    }
+
+    #[cfg(feature = "storage-zbox")]
+    #[test]
+    fn zbox_depot() {
+        init_env();
+        let mut storage =
+            Storage::new("zbox://accessKey456@repo456?cache_type=mem&cache_size=1").unwrap();
+        storage.connect().unwrap();
+        storage.init(Cost::default(), Cipher::default()).unwrap();
+        test_depot(storage.into_ref());
+    }
+
+    fn perf_test(storage: &StorageRef, prefix: &str) {
+        const DATA_LEN: usize = 36 * 1024 * 1024;
+        let mut buf = vec![0u8; DATA_LEN];
+        let seed = RandomSeed::from(&[0u8; RANDOM_SEED_SIZE]);
+        Crypto::random_buf_deterministic(&mut buf, &seed);
+        let id = Eid::new();
+
+        // write
+        let now = Instant::now();
+        let mut wtr = Writer::new(&id, storage);
+        wtr.write_all(&buf).unwrap();
+        wtr.finish().unwrap();
+        let write_time = now.elapsed();
+
+        // read
+        let now = Instant::now();
+        let mut rdr = Reader::new(&id, storage).unwrap();
+        let mut dst = Vec::new();
+        let read = rdr.read_to_end(&mut dst).unwrap();
+        assert_eq!(read, buf.len());
+        let read_time = now.elapsed();
+
+        println!(
+            "{} perf: read: {}, write: {}",
+            prefix,
+            speed_str(&read_time, DATA_LEN),
+            speed_str(&write_time, DATA_LEN)
+        );
+    }
+
+    #[test]
+    fn mem_perf() {
+        init_env();
+        let mut storage = Storage::new("mem://foo").unwrap();
+        storage.init(Cost::default(), Cipher::default()).unwrap();
+        let storage = storage.into_ref();
+        perf_test(&storage, "Memory storage");
+    }
+
+    #[test]
+    fn file_perf() {
+        init_env();
+        let tmpdir = TempDir::new("zbox_test").expect("Create temp dir failed");
+        let uri = format!("file://{}", tmpdir.path().display());
+        let mut storage = Storage::new(&uri).unwrap();
+        storage.init(Cost::default(), Cipher::default()).unwrap();
+        let storage = storage.into_ref();
+        perf_test(&storage, "File storage");
+    }
+
+    #[test]
+    #[ignore]
+    fn crypto_perf_test() {
+        init_env();
+
+        let mut dir = env::temp_dir();
+        dir.push("zbox_crypto_perf_test");
+        if dir.exists() {
+            fs::remove_dir_all(&dir).unwrap();
+        }
+        fs::create_dir(&dir).unwrap();
+
+        let crypto = Crypto::new(Cost::default(), Cipher::Aes).unwrap();
+        let key = Key::new_empty();
+        let mut depot = FileStorage::new(&dir);
+        depot.init(crypto.clone(), key.derive(0)).unwrap();
+
+        const DATA_LEN: usize = 32 * 1024 * 1024;
+        let chunk_size = crypto.decrypted_len(FRAME_SIZE);
+        let data_size = DATA_LEN / FRAME_SIZE * chunk_size;
+        let mut data = vec![0u8; data_size];
+        let seed = RandomSeed::from(&[0u8; RANDOM_SEED_SIZE]);
+        Crypto::random_buf_deterministic(&mut data, &seed);
+
+        // write
+        let mut buf = vec![0u8; FRAME_SIZE];
+        let mut blk_cnt = 0;
+        let now = Instant::now();
+        for frame in data.chunks(chunk_size) {
+            let _enc_len = crypto.encrypt_to(&mut buf, frame, &key).unwrap();
+            depot
+                .put_blocks(Span::new(blk_cnt, BLKS_PER_FRAME), &buf)
+                .unwrap();
+            blk_cnt += BLKS_PER_FRAME;
+        }
+        let write_time = now.elapsed();
+
+        // read
+        let mut dst = vec![0u8; chunk_size];
+        let now = Instant::now();
+        for frm_idx in 0..blk_cnt / BLKS_PER_FRAME {
+            depot
+                .get_blocks(
+                    &mut buf,
+                    Span::new(frm_idx * BLKS_PER_FRAME, BLKS_PER_FRAME),
+                )
+                .unwrap();
+            crypto.decrypt_to(&mut dst, &buf, &key).unwrap();
+        }
+        let read_time = now.elapsed();
+
+        println!(
+            "Raw crypto + file storage perf: read: {}, write: {}",
+            speed_str(&read_time, DATA_LEN),
+            speed_str(&write_time, DATA_LEN)
+        );
+
+        fs::remove_dir_all(&dir).unwrap();
     }
 }
