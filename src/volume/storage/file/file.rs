@@ -207,11 +207,11 @@ mod tests {
 
     use self::tempdir::TempDir;
     use super::*;
-    use base::crypto::{Crypto, RandomSeed, RANDOM_SEED_SIZE};
-    use base::init_env;
-    use base::utils::speed_str;
-    use error::Error;
-    use volume::BLK_SIZE;
+    use crate::error::Error;
+    use crate::util::crypto::{Crypto, RandomSeed, RANDOM_SEED_SIZE};
+    use crate::util::init_env;
+    use crate::util::speed_str;
+    use crate::BLK_SIZE;
 
     fn setup() -> (PathBuf, TempDir) {
         init_env();

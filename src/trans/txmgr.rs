@@ -241,11 +241,11 @@ mod tests {
     use self::tempdir::TempDir;
     use super::*;
 
-    use base::init_env;
-    use fs::Config;
-    use trans::cow::{CowRef, Cowable, IntoCow};
-    use trans::TxMgr;
-    use volume::{ArmAccess, Volume};
+    use crate::fs::Config;
+    use crate::trans::cow::{CowRef, Cowable, IntoCow};
+    use crate::trans::TxMgr;
+    use crate::util::init_env;
+    use crate::volume::{ArmAccess, Volume};
 
     fn setup_mem_vol() -> VolumeRef {
         init_env();

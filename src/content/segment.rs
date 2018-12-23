@@ -473,9 +473,9 @@ pub type Cache = CowCache<Segment>;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use base::init_env;
-    use content::entry::{CutableList, EntryList};
-    use content::span::{Extent, Span};
+    use crate::content::entry::{CutableList, EntryList};
+    use crate::content::span::{Extent, Span};
+    use crate::util::init_env;
 
     fn test_split_off(elst: &EntryList, seg_begin: &Segment, seg_end: &Segment) {
         // split at the beginning

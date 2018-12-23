@@ -11,8 +11,7 @@ pub use self::time::Time;
 use std::fmt::Write;
 use std::fs;
 use std::path::Path;
-use std::sync::Arc;
-use std::sync::RwLock;
+use std::sync::{Arc, Once, RwLock, ONCE_INIT};
 use std::time::Duration;
 
 use crate::error::Result;
@@ -95,6 +94,42 @@ pub fn remove_empty_parent_dir(path: &Path) -> Result<()> {
         fs::remove_dir(&parent)?;
     }
     Ok(())
+}
+
+#[cfg(target_os = "android")]
+use log::Level;
+
+#[cfg(target_os = "android")]
+use android_logger::{self, Filter};
+
+#[cfg(not(target_os = "android"))]
+use env_logger;
+
+static INIT: Once = ONCE_INIT;
+
+/// Initialise ZboxFS environment.
+///
+/// This function should be called before any other functions provided by ZboxFS.
+/// This function can be called more than one time.
+pub fn init_env() {
+    // only call the initialisation code once globally
+    INIT.call_once(|| {
+        #[cfg(target_os = "android")]
+        {
+            android_logger::init_once(
+                Filter::default()
+                    .with_min_level(Level::Trace)
+                    .with_allowed_module_path("zbox::fs::fs")
+                    .with_allowed_module_path("zbox::trans::txmgr"),
+                Some("zboxfs"),
+            );
+        }
+        #[cfg(not(target_os = "android"))]
+        {
+            env_logger::try_init().ok();
+        }
+        crypto::Crypto::init().expect("Initialise crypto failed");
+    });
 }
 
 /// Wrap type into reference type Arc<RwLock<T>>

@@ -577,10 +577,10 @@ mod tests {
 
     use self::tempdir::TempDir;
     use super::*;
-    use base::crypto::{Cipher, Cost, Crypto, RandomSeed, RANDOM_SEED_SIZE};
-    use base::init_env;
-    use base::utils::speed_str;
-    use volume::address::Span;
+    use crate::util::crypto::{Cipher, Cost, Crypto, RandomSeed, RANDOM_SEED_SIZE};
+    use crate::util::init_env;
+    use crate::util::speed_str;
+    use crate::volume::address::Span;
 
     struct SizeVar {
         blk_size: usize,

@@ -501,10 +501,10 @@ mod tests {
 
     use std::{thread, time};
 
-    use base::init_env;
-    use fs::Config;
-    use trans::{Eid, TxMgr};
-    use volume::Volume;
+    use crate::fs::Config;
+    use crate::trans::{Eid, TxMgr};
+    use crate::util::init_env;
+    use crate::volume::Volume;
 
     fn setup_vol() -> VolumeRef {
         init_env();

@@ -275,9 +275,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use base::{init_env, IntoRef};
-    use fs::Config;
-    use volume::Volume;
+    use crate::fs::Config;
+    use crate::util::{init_env, IntoRef};
+    use crate::volume::Volume;
 
     #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
     struct Item {

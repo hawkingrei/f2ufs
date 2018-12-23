@@ -226,10 +226,10 @@ mod tests {
     use std::time::Instant;
 
     use super::*;
-    use base::crypto::{Crypto, RandomSeed, RANDOM_SEED_SIZE};
-    use base::init_env;
-    use base::utils::speed_str;
-    use content::chunk::Chunk;
+    use crate::content::chunk::Chunk;
+    use crate::util::crypto::{Crypto, RandomSeed, RANDOM_SEED_SIZE};
+    use crate::util::init_env;
+    use crate::util::speed_str;
 
     #[derive(Debug)]
     struct Sinker {

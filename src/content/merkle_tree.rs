@@ -388,8 +388,8 @@ impl Debug for Writer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use base::crypto::RandomSeed;
-    use base::init_env;
+    use crate::util::crypto::RandomSeed;
+    use crate::util::init_env;
     use std::io::Cursor;
 
     fn calculate_merkle_hash(buf: &[u8]) -> Hash {

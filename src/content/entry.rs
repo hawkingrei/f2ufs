@@ -461,7 +461,7 @@ impl Seek for EntryList {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use base::init_env;
+    use crate::util::init_env;
 
     #[test]
     fn entry_list_append() {

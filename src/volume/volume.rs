@@ -358,9 +358,9 @@ mod tests {
 
     use self::tempdir::TempDir;
     use super::*;
-    use base::crypto::{Crypto, RandomSeed, RANDOM_SEED_SIZE};
-    use base::init_env;
-    use base::utils::speed_str;
+    use crate::util::crypto::{Crypto, RandomSeed, RANDOM_SEED_SIZE};
+    use crate::util::init_env;
+    use crate::util::speed_str;
 
     fn setup_mem_vol() -> VolumeRef {
         init_env();
