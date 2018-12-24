@@ -501,8 +501,8 @@ fn open_file_with_options<P: AsRef<Path>>(
 ///
 /// ```no_run
 /// # #![allow(unused_mut, unused_variables, dead_code)]
-/// # use zbox::Result;
-/// use zbox::{init_env, RepoOpener};
+/// # use f2ufs::Result;
+/// use f2ufs::{init_env, RepoOpener};
 ///
 /// # fn foo() -> Result<()> {
 /// init_env();
@@ -517,7 +517,7 @@ fn open_file_with_options<P: AsRef<Path>>(
 ///
 /// ```
 /// # #![allow(unused_mut, unused_variables, dead_code)]
-/// # use zbox::{init_env, Result, RepoOpener};
+/// # use f2ufs::{init_env, Result, RepoOpener};
 /// # fn foo() -> Result<()> {
 /// # init_env();
 /// let mut repo = RepoOpener::new().create(true).open("mem://foo", "pwd")?;
@@ -529,7 +529,7 @@ fn open_file_with_options<P: AsRef<Path>>(
 ///
 /// ```no_run
 /// # #![allow(unused_mut, unused_variables, dead_code)]
-/// # use zbox::{Result, RepoOpener};
+/// # use f2ufs::{Result, RepoOpener};
 /// # fn foo() -> Result<()> {
 /// let mut repo = RepoOpener::new()
 ///     .read_only(true)
@@ -686,7 +686,7 @@ impl Repo {
     ///
     /// ```
     /// # #![allow(unused_mut, unused_variables, dead_code)]
-    /// # use zbox::{init_env, Result, RepoOpener};
+    /// # use f2ufs::{init_env, Result, RepoOpener};
     /// # fn foo() -> Result<()> {
     /// # init_env();
     /// # let mut repo = RepoOpener::new()

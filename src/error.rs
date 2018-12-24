@@ -332,8 +332,8 @@ impl PartialEq for Error {
 
 /// A specialized [`Result`] type for ZboxFS operations.
 ///
-/// See the [`zbox::Error`] for all the  errors.
+/// See the [`f2ufs::Error`] for all the  errors.
 ///
 /// [`Result`]: https://doc.rust-lang.org/std/result/enum.Result.html
-/// [`zbox::Error`]: enum.Error.html
+/// [`f2ufs::Error`]: enum.Error.html
 pub type Result<T> = result::Result<T, Error>;

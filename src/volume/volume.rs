@@ -372,7 +372,7 @@ mod tests {
 
     fn setup_file_vol(pwd: &str, payload: &[u8]) -> (VolumeRef, TempDir) {
         init_env();
-        let tmpdir = TempDir::new("zbox_test").expect("Create temp dir failed");
+        let tmpdir = TempDir::new("f2ufs_test").expect("Create temp dir failed");
         let dir = tmpdir.path().to_path_buf();
         //let dir = PathBuf::from("./tt");
         if dir.exists() {
@@ -469,13 +469,13 @@ mod tests {
         reopen_test(&pwd, &payload, vol);
     }
 
-    #[cfg(feature = "storage-zbox")]
+    #[cfg(feature = "storage-f2ufs")]
     #[test]
-    fn zbox_volume() {
+    fn f2ufs_volume() {
         init_env();
         let pwd = "pwd";
         let payload = [1, 2, 3];
-        let uri = "zbox://accessKey456@repo456?cache_type=mem&cache_size=1";
+        let uri = "f2ufs://accessKey456@repo456?cache_type=mem&cache_size=1";
         let mut vol = Volume::new(&uri).unwrap();
         vol.init(&pwd, &Config::default(), &payload).unwrap();
         let vol = vol.into_ref();

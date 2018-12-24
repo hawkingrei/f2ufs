@@ -119,9 +119,9 @@ pub fn init_env() {
             android_logger::init_once(
                 Filter::default()
                     .with_min_level(Level::Trace)
-                    .with_allowed_module_path("zbox::fs::fs")
-                    .with_allowed_module_path("zbox::trans::txmgr"),
-                Some("zboxfs"),
+                    .with_allowed_module_path("f2ufs::fs::fs")
+                    .with_allowed_module_path("f2ufs::trans::txmgr"),
+                Some("f2ufsfs"),
             );
         }
         #[cfg(not(target_os = "android"))]

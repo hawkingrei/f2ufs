@@ -773,7 +773,7 @@ mod tests {
     #[test]
     fn file_depot() {
         init_env();
-        let tmpdir = TempDir::new("zbox_test").expect("Create temp dir failed");
+        let tmpdir = TempDir::new("f2ufs_test").expect("Create temp dir failed");
         let uri = format!("file://{}", tmpdir.path().display());
         let storage = Storage::new(&uri).unwrap();
         test_depot(storage.into_ref());
@@ -799,12 +799,12 @@ mod tests {
         test_depot(storage.into_ref());
     }
 
-    #[cfg(feature = "storage-zbox")]
+    #[cfg(feature = "storage-f2ufs")]
     #[test]
-    fn zbox_depot() {
+    fn f2ufs_depot() {
         init_env();
         let mut storage =
-            Storage::new("zbox://accessKey456@repo456?cache_type=mem&cache_size=1").unwrap();
+            Storage::new("f2ufs://accessKey456@repo456?cache_type=mem&cache_size=1").unwrap();
         storage.connect().unwrap();
         storage.init(Cost::default(), Cipher::default()).unwrap();
         test_depot(storage.into_ref());
@@ -852,7 +852,7 @@ mod tests {
     #[test]
     fn file_perf() {
         init_env();
-        let tmpdir = TempDir::new("zbox_test").expect("Create temp dir failed");
+        let tmpdir = TempDir::new("f2ufs_test").expect("Create temp dir failed");
         let uri = format!("file://{}", tmpdir.path().display());
         let mut storage = Storage::new(&uri).unwrap();
         storage.init(Cost::default(), Cipher::default()).unwrap();
@@ -866,7 +866,7 @@ mod tests {
         init_env();
 
         let mut dir = env::temp_dir();
-        dir.push("zbox_crypto_perf_test");
+        dir.push("f2ufs_crypto_perf_test");
         if dir.exists() {
             fs::remove_dir_all(&dir).unwrap();
         }

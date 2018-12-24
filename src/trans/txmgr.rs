@@ -257,17 +257,17 @@ mod tests {
 
     fn setup_file_vol() -> (VolumeRef, TempDir) {
         init_env();
-        let tmpdir = TempDir::new("zbox_test").expect("Create temp dir failed");
+        let tmpdir = TempDir::new("f2ufs_test").expect("Create temp dir failed");
         let uri = format!("file://{}", tmpdir.path().display());
         let mut vol = Volume::new(&uri).unwrap();
         vol.init("pwd", &Config::default(), &Vec::new()).unwrap();
         (vol.into_ref(), tmpdir)
     }
 
-    #[cfg(feature = "storage-zbox")]
-    fn setup_zbox_vol() -> VolumeRef {
+    #[cfg(feature = "storage-f2ufs")]
+    fn setup_f2ufs_vol() -> VolumeRef {
         init_env();
-        let uri = "zbox://accessKey456@repo456?cache_type=mem&cache_size=1".to_string();
+        let uri = "f2ufs://accessKey456@repo456?cache_type=mem&cache_size=1".to_string();
         let mut vol = Volume::new(&uri).unwrap();
         vol.init("pwd", &Config::default(), &Vec::new()).unwrap();
         vol.into_ref()
@@ -447,15 +447,15 @@ mod tests {
         }
     }
 
-    #[cfg(feature = "storage-zbox")]
+    #[cfg(feature = "storage-f2ufs")]
     #[test]
-    fn test_trans_zbox() {
+    fn test_trans_f2ufs() {
         {
-            let vol = setup_zbox_vol();
+            let vol = setup_f2ufs_vol();
             trans_oper(vol);
         }
         {
-            let vol = setup_zbox_vol();
+            let vol = setup_f2ufs_vol();
             trans_abort(vol);
         }
     }

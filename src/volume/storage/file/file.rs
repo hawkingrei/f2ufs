@@ -215,7 +215,7 @@ mod tests {
 
     fn setup() -> (PathBuf, TempDir) {
         init_env();
-        let tmpdir = TempDir::new("zbox_test").expect("Create temp dir failed");
+        let tmpdir = TempDir::new("f2ufs_test").expect("Create temp dir failed");
         let dir = tmpdir.path().to_path_buf();
         //let dir = PathBuf::from("./tt");
         if dir.exists() {
