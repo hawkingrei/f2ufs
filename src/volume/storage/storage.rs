@@ -68,7 +68,7 @@ impl Storage {
     const ADDRESS_CACHE_SIZE: usize = 64;
 
     pub fn new(uri: &str) -> Result<Self> {
-        let depot = if uri.starts_with("mem://") {
+        let depot: Box<Storable> = if uri.starts_with("mem://") {
             let depot = MemStorage::new();
             Box::new(depot)
         } else if uri.starts_with("file://") {
