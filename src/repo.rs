@@ -502,8 +502,8 @@ fn open_file_with_options<P: AsRef<Path>>(
 /// ```no_run
 /// # #![allow(unused_mut, unused_variables, dead_code)]
 /// # use f2ufs::Result;
-/// use f2ufs::{init_env, RepoOpener};
-///
+/// use f2ufs::repo::RepoOpener;
+/// use f2ufs::util::init_env;
 /// # fn foo() -> Result<()> {
 /// init_env();
 /// let mut repo = RepoOpener::new()
@@ -517,7 +517,9 @@ fn open_file_with_options<P: AsRef<Path>>(
 ///
 /// ```
 /// # #![allow(unused_mut, unused_variables, dead_code)]
-/// # use f2ufs::{init_env, Result, RepoOpener};
+/// # use f2ufs::repo::RepoOpener;
+/// # use f2ufs::util::init_env;
+/// # use f2ufs::error::Result;
 /// # fn foo() -> Result<()> {
 /// # init_env();
 /// let mut repo = RepoOpener::new().create(true).open("mem://foo", "pwd")?;
@@ -529,7 +531,8 @@ fn open_file_with_options<P: AsRef<Path>>(
 ///
 /// ```no_run
 /// # #![allow(unused_mut, unused_variables, dead_code)]
-/// # use f2ufs::{Result, RepoOpener};
+/// # use f2ufs::repo::RepoOpener;
+/// # use f2ufs::error::Result;
 /// # fn foo() -> Result<()> {
 /// let mut repo = RepoOpener::new()
 ///     .read_only(true)
@@ -686,7 +689,9 @@ impl Repo {
     ///
     /// ```
     /// # #![allow(unused_mut, unused_variables, dead_code)]
-    /// # use f2ufs::{init_env, Result, RepoOpener};
+    /// # use f2ufs::repo::RepoOpener;
+    /// # use f2ufs::util::init_env;
+    /// # use f2ufs::error::Result;
     /// # fn foo() -> Result<()> {
     /// # init_env();
     /// # let mut repo = RepoOpener::new()

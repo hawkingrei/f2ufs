@@ -59,8 +59,9 @@ impl Seek for VersionReader {
 ///
 /// ```
 /// use std::io::prelude::*;
-/// # use zbox::{init_env, Result, RepoOpener};
-///
+/// # use f2ufs::repo::RepoOpener;
+/// # use f2ufs::util::init_env;
+/// # use f2ufs::error::Result;
 /// # fn foo() -> Result<()> {
 /// # init_env();
 /// # let mut repo = RepoOpener::new().create(true).open("mem://foo", "pwd")?;
@@ -75,9 +76,11 @@ impl Seek for VersionReader {
 /// Read the content of a file into a [`String`]:
 ///
 /// ```
-/// # use zbox::{init_env, Result, RepoOpener};
+/// # use f2ufs::repo::RepoOpener;
+/// # use f2ufs::error::Result;
+/// # use f2ufs::util::init_env;
 /// use std::io::prelude::*;
-/// # use zbox::OpenOptions;
+/// # use f2ufs::repo::OpenOptions;
 ///
 /// # fn foo() -> Result<()> {
 /// # init_env();
@@ -125,10 +128,12 @@ impl Seek for VersionReader {
 ///   ## Examples
 ///
 ///   ```
-///   # use zbox::{init_env, Result, RepoOpener};
+///   # use f2ufs::repo::RepoOpener;
+///   # use f2ufs::util::init_env;
+///   # use f2ufs::error::Result;
 ///   use std::io::prelude::*;
 ///   use std::io::SeekFrom;
-///   # use zbox::OpenOptions;
+///   # use f2ufs::repo::OpenOptions;
 ///
 ///   # fn foo() -> Result<()> {
 ///   # init_env();
@@ -159,9 +164,11 @@ impl Seek for VersionReader {
 ///
 ///   ```
 ///   # #![allow(unused_mut, unused_variables)]
-///   # use zbox::{init_env, Result, RepoOpener};
+///   # use f2ufs::repo::RepoOpener;
+///   # use f2ufs::util::init_env;
+///   # use f2ufs::error::Result;
 ///   use std::io::{Read, Seek, SeekFrom};
-///   # use zbox::OpenOptions;
+///   # use f2ufs::repo::OpenOptions;
 ///
 ///   # fn foo() -> Result<()> {
 ///   # init_env();
@@ -196,8 +203,10 @@ impl Seek for VersionReader {
 /// ```
 /// use std::io::prelude::*;
 /// use std::io::SeekFrom;
-/// # use zbox::{init_env, Result, RepoOpener};
-/// # use zbox::OpenOptions;
+/// # use f2ufs::repo::RepoOpener;
+/// # use f2ufs::util::init_env;
+/// # use f2ufs::error::Result;
+/// # use f2ufs::repo::OpenOptions;
 ///
 /// # fn foo() -> Result<()> {
 /// # init_env();
@@ -228,8 +237,10 @@ impl Seek for VersionReader {
 ///
 /// ```
 /// use std::io::prelude::*;
-/// # use zbox::{init_env, Result, RepoOpener};
-/// # use zbox::OpenOptions;
+/// # use f2ufs::repo::RepoOpener;
+/// # use f2ufs::util::init_env;
+/// # use f2ufs::error::Result;
+/// # use f2ufs::repo::OpenOptions;
 ///
 /// # fn foo() -> Result<()> {
 /// # init_env();
