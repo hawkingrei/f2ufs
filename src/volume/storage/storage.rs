@@ -10,6 +10,7 @@ use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 
 use super::file::FileStorage;
+use super::mem::MemStorage;
 use crate::error::{Error, Result};
 use crate::trans::eid::Eid;
 use crate::trans::Finish;
