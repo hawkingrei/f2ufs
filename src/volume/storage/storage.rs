@@ -2,7 +2,6 @@ use std::cmp::min;
 use std::error::Error as StdError;
 use std::fmt::{self, Debug};
 use std::io::{Error as IoError, ErrorKind, Read, Result as IoResult, Write};
-use std::ops::DerefMut;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
 

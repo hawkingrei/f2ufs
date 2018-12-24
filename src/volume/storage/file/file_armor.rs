@@ -13,7 +13,6 @@ use crate::util::crypto::{Crypto, Key};
 use crate::util::{ensure_parents_dir, remove_empty_parent_dir};
 use crate::volume::armor::ArmAccess;
 use crate::volume::armor::Armor;
-use crate::volume::armor::Seq;
 
 // read/write frame size
 const FRAME_SIZE: usize = 16 * 1024;

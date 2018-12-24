@@ -8,7 +8,6 @@ pub mod version;
 
 pub use self::time::Time;
 
-use std::fmt::Write;
 use std::fs;
 use std::path::Path;
 use std::sync::{Arc, Once, RwLock, ONCE_INIT};

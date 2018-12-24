@@ -10,7 +10,6 @@ use crate::fs::fnode::FileType;
 use crate::fs::fnode::Metadata;
 use crate::fs::fnode::Version;
 use crate::fs::fs::Fs;
-use crate::fs::fs::ShutterRef;
 use crate::fs::Config;
 use crate::fs::Options;
 use crate::trans::eid::Eid;
