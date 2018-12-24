@@ -1,0 +1,9 @@
+/// Define F2UFS repo version
+pub const REPO_MAJOR_VERSION: u8 = 0;
+pub const REPO_MINOR_VERSION: u8 = 0;
+pub const REPO_PATCH_VERSION: u8 = 1;
+
+/// Define F2UFS library version
+pub const LIB_MAJOR_VERSION: u8 = 0;
+pub const LIB_MINOR_VERSION: u8 = 0;
+pub const LIB_PATCH_VERSION: u8 = 1;
