@@ -56,7 +56,7 @@ impl Encode for u8 {
 
 impl Decode for u16 {
     fn read_le(from: &[u8]) -> u16 {
-        from[0] as u16 | (from[1] as u16) << 8
+        u16::from(from[0]) | (u16::from(from[1])) << 8
     }
 }
 impl Encode for u16 {

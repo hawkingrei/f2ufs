@@ -144,7 +144,7 @@ impl Volume {
         let mut ret = self.info.clone();
 
         // mask secrets in uri
-        if let Some(end) = ret.uri.find("@") {
+        if let Some(end) = ret.uri.find('@') {
             let begin = ret.uri.find("://").unwrap() + 3;
             ret.uri.replace_range(begin..end, "***");
         }
