@@ -11,8 +11,8 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate bytes;
-extern crate rmp_serde;
 extern crate env_logger;
+extern crate rmp_serde;
 
 macro_rules! map_io_err {
     ($x:expr) => {
@@ -23,21 +23,13 @@ macro_rules! map_io_err {
 pub mod content;
 pub mod diskptr;
 pub mod error;
-pub mod f2fs;
 pub mod file;
 pub mod fs;
-pub mod inode;
-pub mod parallel_io;
 pub mod repo;
-pub mod segment;
-pub mod trace;
 pub mod trans;
 pub mod util;
 pub mod version;
 pub mod volume;
-
-use std::io;
-use std::sync::atomic::AtomicU8;
 
 // block and frame size
 pub const BLK_SIZE: usize = 8 * 1024;
@@ -45,9 +37,6 @@ pub const BLKS_PER_FRAME: usize = 16;
 pub const FRAME_SIZE: usize = BLKS_PER_FRAME * BLK_SIZE;
 
 pub use self::error::{Error, Result};
-
-pub type block_t = u32;
-pub type nid_t = u32;
 
 /// An offset for a storage file segment.
 pub type SegmentId = usize;

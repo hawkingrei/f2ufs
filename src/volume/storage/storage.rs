@@ -2,7 +2,6 @@ use std::cmp::min;
 use std::error::Error as StdError;
 use std::fmt::{self, Debug};
 use std::io::{Error as IoError, ErrorKind, Read, Result as IoResult, Write};
-use std::ops::DerefMut;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
 
@@ -12,19 +11,19 @@ use serde::{Deserialize, Serialize};
 use super::file::FileStorage;
 use super::mem::MemStorage;
 use crate::error::{Error, Result};
-use crate::trans::eid::Eid;
-use crate::trans::Finish;
-use crate::util::align_ceil_chunk;
-use crate::util::crypto::{Cipher, Cost, Crypto, Key};
-use crate::util::lru::{CountMeter, Lru, Meter, PinChecker};
-use crate::util::IntoRef;
-use crate::volume::address::Addr;
-use crate::volume::allocator::Allocator;
-use crate::volume::allocator::AllocatorRef;
-use crate::volume::storage::Storable;
-use crate::BLKS_PER_FRAME;
-use crate::BLK_SIZE;
-use crate::FRAME_SIZE;
+use crate::trans::{eid::Eid, Finish};
+use crate::util::{
+    align_ceil_chunk,
+    crypto::{Cipher, Cost, Crypto, Key},
+    lru::{CountMeter, Lru, Meter, PinChecker},
+    IntoRef,
+};
+use crate::volume::{
+    address::Addr,
+    allocator::{Allocator, AllocatorRef},
+    storage::Storable,
+};
+use crate::{BLKS_PER_FRAME, BLK_SIZE, FRAME_SIZE};
 
 // frame cache meter, measured by frame byte size
 #[derive(Debug, Default)]

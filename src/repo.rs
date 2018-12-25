@@ -5,19 +5,10 @@ use std::time::SystemTime;
 
 use crate::error::{Error, Result};
 use crate::file::File;
-use crate::fs::fnode::DirEntry;
-use crate::fs::fnode::FileType;
-use crate::fs::fnode::Metadata;
-use crate::fs::fnode::Version;
-use crate::fs::fs::Fs;
-use crate::fs::fs::ShutterRef;
-use crate::fs::Config;
-use crate::fs::Options;
+use crate::fs::fnode::{DirEntry, FileType, Metadata, Version};
+use crate::fs::{fs::Fs, Config, Options};
 use crate::trans::eid::Eid;
-use crate::util::crypto::Cipher;
-use crate::util::crypto::Cost;
-use crate::util::crypto::MemLimit;
-use crate::util::crypto::OpsLimit;
+use crate::util::crypto::{Cipher, Cost, MemLimit, OpsLimit};
 use crate::util::time::Time;
 use crate::util::version;
 

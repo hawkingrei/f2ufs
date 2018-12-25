@@ -8,21 +8,13 @@ use linked_hash_map::LinkedHashMap;
 
 use super::vio;
 use crate::error::{Error, Result};
-use crate::trans::eid::Eid;
-use crate::trans::eid::Id;
-use crate::util::crypto::Crypto;
-use crate::util::crypto::HashKey;
-use crate::util::crypto::Key;
+use crate::trans::eid::{Eid, Id};
+use crate::util::crypto::{Crypto, HashKey, Key};
 use crate::util::ensure_parents_dir;
-use crate::util::lru::CountMeter;
-use crate::util::lru::Lru;
-use crate::util::lru::PinChecker;
+use crate::util::lru::{CountMeter, Lru, PinChecker};
 use crate::util::remove_empty_parent_dir;
 use crate::volume::address::Span;
-use crate::volume::armor::Arm;
-use crate::volume::armor::ArmAccess;
-use crate::volume::armor::Armor;
-use crate::volume::armor::Seq;
+use crate::volume::armor::{Arm, ArmAccess, Armor, Seq};
 use crate::volume::storage::file::file_armor::FileArmor;
 use crate::BLK_SIZE;
 

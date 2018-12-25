@@ -7,13 +7,10 @@ use std::path::{Path, PathBuf};
 
 use super::vio;
 use crate::error::{Error, Result};
-use crate::trans::eid::Eid;
-use crate::trans::Finish;
+use crate::trans::{eid::Eid, Finish};
 use crate::util::crypto::{Crypto, Key};
 use crate::util::{ensure_parents_dir, remove_empty_parent_dir};
-use crate::volume::armor::ArmAccess;
-use crate::volume::armor::Armor;
-use crate::volume::armor::Seq;
+use crate::volume::armor::{ArmAccess, Armor};
 
 // read/write frame size
 const FRAME_SIZE: usize = 16 * 1024;

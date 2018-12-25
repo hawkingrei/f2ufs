@@ -56,7 +56,7 @@ impl Encode for u8 {
 
 impl Decode for u16 {
     fn read_le(from: &[u8]) -> u16 {
-        from[0] as u16 | (from[1] as u16) << 8
+        u16::from(from[0]) | (u16::from(from[1])) << 8
     }
 }
 impl Encode for u16 {
@@ -82,14 +82,14 @@ impl Encode for u32 {
 
 impl Decode for u64 {
     fn read_le(from: &[u8]) -> u64 {
-        from[0] as u64
-            | (from[1] as u64) << 8
-            | (from[2] as u64) << 16
-            | (from[3] as u64) << 24
-            | (from[4] as u64) << 32
-            | (from[5] as u64) << 40
-            | (from[6] as u64) << 48
-            | (from[7] as u64) << 56
+        u64::from(from[0])
+            | (u64::from(from[1])) << 8
+            | (u64::from(from[2])) << 16
+            | (u64::from(from[3])) << 24
+            | (u64::from(from[4])) << 32
+            | (u64::from(from[5])) << 40
+            | (u64::from(from[6])) << 48
+            | (u64::from(from[7])) << 56
     }
 }
 impl Encode for u64 {
@@ -107,22 +107,22 @@ impl Encode for u64 {
 
 impl Decode for u128 {
     fn read_le(from: &[u8]) -> u128 {
-        from[0] as u128
-            | (from[1] as u128) << 8
-            | (from[2] as u128) << 16
-            | (from[3] as u128) << 24
-            | (from[4] as u128) << 32
-            | (from[5] as u128) << 40
-            | (from[6] as u128) << 48
-            | (from[7] as u128) << 56
-            | (from[8] as u128) << 64
-            | (from[9] as u128) << 72
-            | (from[10] as u128) << 80
-            | (from[11] as u128) << 88
-            | (from[12] as u128) << 96
-            | (from[13] as u128) << 104
-            | (from[14] as u128) << 112
-            | (from[15] as u128) << 120
+        u128::from(from[0])
+            | (u128::from(from[1])) << 8
+            | (u128::from(from[2])) << 16
+            | (u128::from(from[3])) << 24
+            | (u128::from(from[4])) << 32
+            | (u128::from(from[5])) << 40
+            | (u128::from(from[6])) << 48
+            | (u128::from(from[7])) << 56
+            | (u128::from(from[8])) << 64
+            | (u128::from(from[9])) << 72
+            | (u128::from(from[10])) << 80
+            | (u128::from(from[11])) << 88
+            | (u128::from(from[12])) << 96
+            | (u128::from(from[13])) << 104
+            | (u128::from(from[14])) << 112
+            | (u128::from(from[15])) << 120
     }
 }
 impl Encode for u128 {

@@ -2,12 +2,12 @@ use std::fmt::{self, Debug};
 
 use crate::error::{Error, Result};
 use crate::trans::eid::Eid;
-use crate::util::collections::HashMap;
-use crate::util::crypto::Crypto;
-use crate::util::crypto::Key;
-use crate::util::IntoRef;
-use crate::volume::address::Span;
-use crate::volume::storage::Storable;
+use crate::util::{
+    collections::HashMap,
+    crypto::{Crypto, Key},
+    IntoRef,
+};
+use crate::volume::{address::Span, storage::Storable};
 use crate::BLK_SIZE;
 
 /// Mem Storage
