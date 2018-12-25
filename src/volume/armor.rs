@@ -7,9 +7,10 @@ use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
-use crate::trans::eid::Eid;
-use crate::trans::eid::Id;
-use crate::trans::Finish;
+use crate::trans::{
+    eid::{Eid, Id},
+    Finish,
+};
 use crate::util::crypto::Crypto;
 use crate::volume::volume::{self, VolumeRef};
 

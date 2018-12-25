@@ -4,16 +4,10 @@ use std::path::Path;
 use bytes::BufMut;
 
 use crate::error::{Error, Result};
-use crate::trans::eid::Eid;
-use crate::trans::eid::Id;
+use crate::trans::eid::{Eid, Id};
 use crate::util::collections::HashMap;
-use crate::util::crypto::Crypto;
-use crate::util::crypto::HashKey;
-use crate::util::crypto::Key;
-use crate::volume::armor::Arm;
-use crate::volume::armor::ArmAccess;
-use crate::volume::armor::Armor;
-use crate::volume::armor::Seq;
+use crate::util::crypto::{Crypto, HashKey, Key};
+use crate::volume::armor::{Arm, ArmAccess, Armor, Seq};
 use crate::volume::storage::file::file_armor::FileArmor;
 
 // entity address bucket

@@ -6,11 +6,9 @@ use super::vio;
 use crate::error::{Error, Result};
 use crate::trans::eid::Eid;
 use crate::util;
-use crate::util::crypto::Crypto;
-use crate::util::crypto::Key;
+use crate::util::crypto::{Crypto, Key};
 use crate::volume::address::Span;
-use crate::volume::storage::file::index::IndexMgr;
-use crate::volume::storage::file::sector::SectorMgr;
+use crate::volume::storage::file::{index::IndexMgr, sector::SectorMgr};
 use crate::volume::storage::Storable;
 
 /// File Storage

@@ -4,9 +4,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
 use crate::trans::eid::Eid;
-use crate::util::crypto::{Cipher, Cost, Crypto, Key, Salt, SALT_SIZE};
-use crate::util::time::Time;
-use crate::util::version::Version;
+use crate::util::{
+    crypto::{Cipher, Cost, Crypto, Key, Salt, SALT_SIZE},
+    time::Time,
+    version::Version,
+};
 use crate::volume::storage::Storage;
 use crate::BLK_SIZE;
 
