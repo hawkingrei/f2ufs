@@ -13,6 +13,7 @@ extern crate serde_derive;
 extern crate bytes;
 extern crate env_logger;
 extern crate rmp_serde;
+extern crate crossbeam;
 
 macro_rules! map_io_err {
     ($x:expr) => {

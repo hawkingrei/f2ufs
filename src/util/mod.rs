@@ -5,6 +5,7 @@ pub mod lru;
 pub mod refcnt;
 pub mod time;
 pub mod version;
+pub mod buffer;
 
 pub use self::time::Time;
 
